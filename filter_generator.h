@@ -34,18 +34,18 @@ public:
 
 private:
 
-    bson_t generate_filter(std::string& field, std::string& term, std::string& dataType);
-    void generate_filters(std::vector<_bson_t>& filters);
+    bson_t* generate_filter(std::string& field, std::string& term, std::string& dataType);
+    void generate_filters();
     bool filter_satisfied (int flag, std::string& _operator);
     void perform_pegtl_parser(std::string& query);
     void generate_data_type_map();
-    bson_t generate_unnested_filter(std::string& field, std::string& term, std::string& dataType);
-    bson_t append_document(bson_t& bson_doc, std::string& field);
+    bson_t* generate_unnested_filter(std::string& field, std::string& term, std::string& dataType);
+    bson_t* append_document(bson_t* bson_doc, std::string& field);
 
 protected:
     std::map<std::string, std::vector<std::string>> arg_map;
     std::map<std::string, unsigned long> data_type_map;
-    std::vector<_bson_t> filters;
+    std::vector<_bson_t*> filters;
 
 };
 

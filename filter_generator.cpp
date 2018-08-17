@@ -186,7 +186,7 @@ Filter::~Filter() {
     filters_size = filters.size();
 
     for (auto i = 0; i < filters_size; i++) {
-        bson_destroy(&filters.at(i));
+        bson_destroy(filters.at(i));
     }
     delete(&arg_map);
 }
@@ -204,8 +204,8 @@ bool Filter::should_insert(bson_t* input_doc) {
 
     for (unsigned long i = 0; i < filters_size; i++) {
         std::cout << "Input doc: " << bson_as_json(input_doc, NULL) << std::endl;
-        int flag = filter_compare_object(input_doc, &filters.at(i));
-        std::cout << "filter: " << bson_as_json(&filters.at(i), NULL) << ", flag: " << flag << std::endl;
+        int flag = filter_compare_object(input_doc, filters.at(i));
+        std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << ", flag: " << flag << std::endl;
 
 //        if (flag == IGNORE_NUM) {
 //            if (arg_map["relationType"].at(i) == "!")
@@ -216,7 +216,7 @@ bool Filter::should_insert(bson_t* input_doc) {
 //            filter_satisfied_arr[i] = filter_satisfied(flag, arg_map["relationType"].at(i));
 //        }
         filter_satisfied_arr[i] = filter_satisfied(flag, arg_map["relationType"].at(i));
-        std::cout << "filter: " << bson_as_json(&filters.at(i), NULL) << " satisfied : " << filter_satisfied_arr[i] << std::endl;
+        std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << " satisfied : " << filter_satisfied_arr[i] << std::endl;
     }
 
     should_insert = filter_satisfied_arr[0];
@@ -259,7 +259,7 @@ void Filter::perform_pegtl_parser(std::string& query) {
     generate_data_type_map();
 
     try {
-        generate_filters(filters);
+        generate_filters();
     } catch (const char *msg) {
         std::cerr << msg << std::endl;
     }
@@ -291,7 +291,7 @@ void Filter:: generate_data_type_map() {
     data_type_map["minkey"] = BSON_TYPE_MINKEY;
 }
 
-void Filter::generate_filters(std::vector<_bson_t>& filters) {
+void Filter::generate_filters() {
 
     // no filters, just insert it
     if (arg_map.empty())
@@ -311,7 +311,7 @@ void Filter::generate_filters(std::vector<_bson_t>& filters) {
             for (unsigned i = 0; i < size; i++) {
 
                 try {
-                    std::cout << "filter is: " << bson_as_json(&generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)), NULL) << std::endl;
+                    std::cout << "filter is: " << bson_as_json(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)), NULL) << std::endl;
                     filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
                 } catch (const char *msg) {
                     std::cerr << msg << std::endl;
@@ -328,14 +328,14 @@ void Filter::generate_filters(std::vector<_bson_t>& filters) {
 }
 
 
-bson_t Filter::generate_filter(std::string& field, std::string& term, std::string& dataType) {
+bson_t* Filter::generate_filter(std::string& field, std::string& term, std::string& dataType) {
     std::istringstream iss(field);
     std::vector<std::string> tokens;
     std::string token;
     unsigned long size;
-    bson_t filter;
+    bson_t* filter;
+    bson_t* rst_filter;
 
-    filter = BSON_INITIALIZER;
     while (std::getline(iss, token, '.')) {
         if (!token.empty())
             tokens.push_back(token);
@@ -349,11 +349,11 @@ bson_t Filter::generate_filter(std::string& field, std::string& term, std::strin
     return filter;
 }
 
-bson_t Filter::append_document(bson_t& bson_doc, std::string& field) {
-    bson_t return_doc;
-    return_doc = BSON_INITIALIZER;
-    BSON_APPEND_DOCUMENT(&return_doc, field.c_str(), &bson_doc);
-    std::cout << "nested filter appended: " << bson_as_json(&return_doc, NULL) << std::endl;
+bson_t* Filter::append_document(bson_t* bson_doc, std::string& field) {
+    bson_t* return_doc;
+    return_doc = bson_new();
+    BSON_APPEND_DOCUMENT(return_doc, field.c_str(), bson_doc);
+    std::cout << "nested filter appended: " << bson_as_json(return_doc, NULL) << std::endl;
     return return_doc;
 }
 
@@ -364,9 +364,9 @@ bson_t Filter::append_document(bson_t& bson_doc, std::string& field) {
 
 // support: BSON_TYPE_DOUBLE, BSON_TYPE_UTF8, BSON_TYPE_BOOL, BSON_TYPE_DATE_TIME, BSON_TYPE_NULL, BSON_TYPE_SYMBOL
 // BSON_TYPE_INT32, BSON_TYPE_TIMESTAMP, BSON_TYPE_DECIMAL128, BSON_TYPE_MAXKEY, BSON_TYPE_MINKEY
-bson_t Filter::generate_unnested_filter(std::string& field, std::string& term, std::string& dataType) {
+bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, std::string& dataType) {
 
-    bson_t b;
+    bson_t* b;
     unsigned long _data_type;
     const bson_t *sub_doc;
     const bson_t *array;
@@ -386,7 +386,7 @@ bson_t Filter::generate_unnested_filter(std::string& field, std::string& term, s
     uint32_t increment;
     bson_decimal128_t decimal128;
 
-    b = BSON_INITIALIZER;
+    b = bson_new();
 //    _data_type = std::stoul(dataType, nullptr, 16);
     _data_type = data_type_map[dataType];
 
@@ -394,27 +394,22 @@ bson_t Filter::generate_unnested_filter(std::string& field, std::string& term, s
         throw "Error: Filter not generated, data type should not be BSON_TYPE_EOD!";
     }
     else if (_data_type == BSON_TYPE_DOUBLE) {
-        BSON_APPEND_DOUBLE(&b, field.c_str(), std::stod(term));
+        BSON_APPEND_DOUBLE(b, field.c_str(), std::stod(term));
     }
     else if (_data_type == BSON_TYPE_UTF8) {
-        BSON_APPEND_UTF8(&b, field.c_str(), term.c_str());
-    }
-    else if (_data_type == BSON_TYPE_DOCUMENT) {
-        // TODO: need to specifically define this case
-        sub_doc = nullptr;
-        BSON_APPEND_DOCUMENT(&b, field.c_str(), sub_doc);
+        BSON_APPEND_UTF8(b, field.c_str(), term.c_str());
     }
     else if (_data_type == BSON_TYPE_ARRAY) {
         // TODO: need to specifically define this case
         array = nullptr;
-         BSON_APPEND_ARRAY(&b, field.c_str(), array);
+         BSON_APPEND_ARRAY(b, field.c_str(), array);
     }
     else if (_data_type == BSON_TYPE_BINARY) {
         // TODO: need to specifically define this case
         binary_subtype;
         binary = nullptr;
         binary_length;
-        BSON_APPEND_BINARY(&b, field.c_str(), binary_subtype, binary, binary_length);
+        BSON_APPEND_BINARY(b, field.c_str(), binary_subtype, binary, binary_length);
     }
     else if (_data_type == BSON_TYPE_UNDEFINED) {
         throw "Error: Filter not generated, data type should not be BSON_TYPE_UNDEFINED!";
@@ -422,57 +417,57 @@ bson_t Filter::generate_unnested_filter(std::string& field, std::string& term, s
     else if (_data_type == BSON_TYPE_OID) {
          // TODO: need to specifically define this case
             oid_oid = nullptr;
-            BSON_APPEND_OID(&b, field.c_str(), oid_oid);
+            BSON_APPEND_OID(b, field.c_str(), oid_oid);
     }
     else if (_data_type == BSON_TYPE_BOOL) {
         // "0"for false, and "1" or "true"
         bool_flag = term == "1";
-        BSON_APPEND_BOOL(&b, field.c_str(), bool_flag);
+        BSON_APPEND_BOOL(b, field.c_str(), bool_flag);
     }
     else if (_data_type == BSON_TYPE_DATE_TIME) {
         // value is assumed to be in UTC format of milliseconds since the UNIX epoch. value MAY be negative
         datetime_val = std::strtoll(term.c_str(), nullptr, 10);
-        BSON_APPEND_DATE_TIME(&b, field.c_str(), datetime_val);
+        BSON_APPEND_DATE_TIME(b, field.c_str(), datetime_val);
     }
     else if (_data_type == BSON_TYPE_NULL) {
         //TODO: there is no term in this case, need to handle this
-        BSON_APPEND_NULL(&b, field.c_str());
+        BSON_APPEND_NULL(b, field.c_str());
     }
     else if (_data_type == BSON_TYPE_REGEX) {
         // TODO: need to include [const char *options] as a param
         reg_options = nullptr;
         regex = term.c_str();
-        BSON_APPEND_REGEX(&b, field.c_str(), regex, reg_options);
+        BSON_APPEND_REGEX(b, field.c_str(), regex, reg_options);
     }
     else if (_data_type == BSON_TYPE_DBPOINTER) {
         //TODO: need to specifically define OID
         // Warning: The dbpointer field type is DEPRECATED and should only be used when interacting with legacy systems.
         collection = term.c_str();
         dbp_oid = nullptr;
-        BSON_APPEND_DBPOINTER(&b, field.c_str(), collection, dbp_oid);
+        BSON_APPEND_DBPOINTER(b, field.c_str(), collection, dbp_oid);
     }
     else if (_data_type == BSON_TYPE_CODE) {
         //javascript: A UTF-8 encoded string containing the javascript.
         code_javascript = term.c_str();
-        BSON_APPEND_CODE(&b, field.c_str(), code_javascript);
+        BSON_APPEND_CODE(b, field.c_str(), code_javascript);
     }
     else if (_data_type == BSON_TYPE_SYMBOL) {
         // Appends a new field to bson of type BSON_TYPE_SYMBOL.
         // This BSON type is deprecated and should not be used in new code.
-        BSON_APPEND_SYMBOL(&b, field.c_str(), term.c_str());
+        BSON_APPEND_SYMBOL(b, field.c_str(), term.c_str());
     }
     else if (_data_type == BSON_TYPE_CODEWSCOPE) {
         //TODO: need to specifically define [const bson_t *scope]
         // scope: Optional bson_t containing the scope for javascript.
         cws_javascript = term.c_str();
         cws_scope = nullptr;
-        BSON_APPEND_CODE_WITH_SCOPE(&b, field.c_str(), cws_javascript, cws_scope);
+        BSON_APPEND_CODE_WITH_SCOPE(b, field.c_str(), cws_javascript, cws_scope);
     }
     else if (_data_type == BSON_TYPE_INT32) {
-        BSON_APPEND_INT32(&b, field.c_str(), std::stoi(term));
+        BSON_APPEND_INT32(b, field.c_str(), std::stoi(term));
     }
     else if (_data_type == BSON_TYPE_INT64) {
-        BSON_APPEND_INT64(&b, field.c_str(), std::stoi(term));
+        BSON_APPEND_INT64(b, field.c_str(), std::stoi(term));
     }
     else if (_data_type == BSON_TYPE_TIMESTAMP) {
         //TODO: need to specifically define [unit32_t timestamp] and [unit32_t increment]
@@ -481,21 +476,21 @@ bson_t Filter::generate_unnested_filter(std::string& field, std::string& term, s
         // They are primarily used for intra-MongoDB server communication.
         timestamp = strtoul(term.c_str(), NULL, 10);
         increment;
-        BSON_APPEND_TIMESTAMP(&b, field.c_str(), timestamp, increment);
+        BSON_APPEND_TIMESTAMP(b, field.c_str(), timestamp, increment);
     }
     else if (_data_type == BSON_TYPE_DECIMAL128) {
         bson_decimal128_from_string(term.c_str(), &decimal128);
-        BSON_APPEND_DECIMAL128(&b, field.c_str(), &decimal128);
+        BSON_APPEND_DECIMAL128(b, field.c_str(), &decimal128);
     }
     else if (_data_type == BSON_TYPE_MAXKEY) {
         //TODO: there is no term in this case, need to handle this
-        BSON_APPEND_MAXKEY(&b, field.c_str());
+        BSON_APPEND_MAXKEY(b, field.c_str());
     }
     else if (_data_type == BSON_TYPE_MINKEY) {
-        BSON_APPEND_MINKEY(&b, field.c_str());
+        BSON_APPEND_MINKEY(b, field.c_str());
     }
 
-    std::cout << "filter generated: " << bson_as_json(&b, NULL) << std::endl;
+    std::cout << "filter generated: " << bson_as_json(b, NULL) << std::endl;
 
     return b;
 }
@@ -532,7 +527,7 @@ void Filter::print_filters() {
 
     if (size != 0) {
         for (auto it = filters.begin(); it != filters.end(); it++) {
-            std::cout << "\t" << bson_as_json( &(*it), NULL) << std::endl;
+            std::cout << "\t" << bson_as_json(*it, NULL) << std::endl;
         }
         std::cout << std::endl;
     }
