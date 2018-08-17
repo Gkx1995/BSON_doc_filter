@@ -168,6 +168,7 @@ bson_t* generate_fixed_input_doc() {
 
     bson_decimal128_from_string("500", &decimal128);
     BSON_APPEND_DECIMAL128(input_doc, "decimal128", &decimal128);
+    std::cout << "input_doc is: " << bson_as_json(input_doc, NULL) << std::endl;
 
     return input_doc;
 }
