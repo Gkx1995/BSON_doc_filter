@@ -339,10 +339,10 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
     while (std::getline(iss, token, '.')) {
         if (!token.empty()) {
             tokens.push_back(token);
-            std::cout << "token: " << token << std::endl;
         }
     }
     size = tokens.size();
+    std::cout << "token size: " << token << std::endl;
     filter = generate_unnested_filter(tokens.at(size - 1), term, dataType);
 
     for (unsigned long i = size - 2; i >= 0; i--) {
