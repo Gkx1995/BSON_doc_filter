@@ -437,6 +437,10 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
     SECTION("Test nested query") {
         std::string q1 = "where int32 document.a.b.c = 1";
         CHECK(should_insert(input_doc, q1) == true);
+        std::string q2 = "where int32 document.a.b.c > 0";
+        CHECK(should_insert(input_doc, q2) == true);
+        std::string q2 = "where int32 document.a.b.c < 5";
+        CHECK(should_insert(input_doc, q2) == true);
     }
 
 
