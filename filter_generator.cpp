@@ -181,7 +181,7 @@ Filter::Filter(std::string& query) {
 
 // Destructor
 Filter::~Filter() {
-    unsigned long filters_size;
+    long filters_size;
 
     filters_size = filters.size();
 
@@ -193,7 +193,7 @@ Filter::~Filter() {
 
 bool Filter::should_insert(bson_t* input_doc) {
 
-    unsigned long filters_size = filters.size();
+    long filters_size = filters.size();
     bool should_insert;
 
     // no filters, all satisfied
@@ -202,7 +202,7 @@ bool Filter::should_insert(bson_t* input_doc) {
 
     auto* filter_satisfied_arr = new bool[filters_size];
 
-    for (unsigned long i = 0; i < filters_size; i++) {
+    for (long i = 0; i < filters_size; i++) {
         std::cout << "Input doc: " << bson_as_json(input_doc, NULL) << std::endl;
         int flag = filter_compare_object(input_doc, filters.at(i));
         std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << ", flag: " << flag << std::endl;
@@ -221,7 +221,7 @@ bool Filter::should_insert(bson_t* input_doc) {
 
     should_insert = filter_satisfied_arr[0];
 
-    unsigned long bool_relations_size = arg_map["boolType"].size();
+    long bool_relations_size = arg_map["boolType"].size();
 
     // only one filter
     if (bool_relations_size == 0) {
@@ -230,7 +230,7 @@ bool Filter::should_insert(bson_t* input_doc) {
 
     if (filters_size > 0 && bool_relations_size == filters_size - 1) {
 
-        for (unsigned long i = 0; i < bool_relations_size; i++) {
+        for (long i = 0; i < bool_relations_size; i++) {
 
             if (arg_map["boolType"].at(i) == "and") {
                 should_insert = should_insert && filter_satisfied_arr[i + 1];
@@ -307,8 +307,8 @@ void Filter::generate_filters() {
 
         if (field_list.size() == term_list.size() && data_type_list.size() == term_list.size()) {
 
-            unsigned long size = term_list.size();
-            for (unsigned i = 0; i < size; i++) {
+            long size = term_list.size();
+            for (long i = 0; i < size; i++) {
 
                 try {
                     std::cout << "filter is: " << bson_as_json(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)), NULL) << std::endl;
@@ -332,7 +332,7 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
     std::istringstream iss(field);
     std::vector<std::string> tokens;
     std::string token;
-    unsigned long size;
+    long size;
     bson_t* filter;
     bson_t* rst_filter;
 
