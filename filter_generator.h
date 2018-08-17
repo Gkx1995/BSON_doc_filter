@@ -8,7 +8,7 @@
 // C include
 #include <iostream>
 #include <fstream>
-
+#include <sstream>
 // third party include
 #include <tao/pegtl.hpp>
 #include <libbson-1.0/bson.h>
@@ -39,6 +39,8 @@ private:
     bool filter_satisfied (int flag, std::string& _operator);
     void perform_pegtl_parser(std::string& query);
     void generate_data_type_map();
+    bson_t generate_unnested_filter(std::string& field, std::string& term, std::string& dataType);
+    bson_t append_document(bson_t& bson_doc, std::string& field);
 
 protected:
     std::map<std::string, std::vector<std::string>> arg_map;

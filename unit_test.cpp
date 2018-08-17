@@ -141,6 +141,9 @@ bson_t* generate_input_doc(unsigned long _data_type, std::string &field, std::st
 bson_t* generate_fixed_input_doc() {
     bson_decimal128_t decimal128;
     bson_t* input_doc = bson_new();
+    bson_t* a = bson_new();
+    bson_t* b = bson_new();
+    bson_t* c = bson_new();
 
     BSON_APPEND_BOOL(input_doc, "bool", true);
     BSON_APPEND_UTF8(input_doc, "utf8", "99");
@@ -156,6 +159,10 @@ bson_t* generate_fixed_input_doc() {
     BSON_APPEND_BOOL(input_doc, "b o o l", false);
 
     BSON_APPEND_UTF8(input_doc, "utf 8", "utf 8");
+
+    BSON_APPEND_INT32(c, "c", 1);
+    BSON_APPEND_DOCUMENT(b, "b", c);
+    BSON_APPEND_DOCUMENT(a, "a", b);
 
 
 
@@ -423,6 +430,11 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
 
         std::string q3 = "where int32 eid ! and int32 int32 >= 24";
         CHECK(should_insert(input_doc, q3) == true);
+    }
+
+    SECTION("Test nested query") {
+        std::string q1 = "where int32 a.b.c = 1";
+        CHECK(should_insert(input_doc, q1) == true);
     }
 
 

@@ -326,6 +326,33 @@ void Filter::generate_filters(std::vector<_bson_t>& filters) {
     }
 }
 
+
+bson_t Filter::generate_filter(std::string& field, std::string& term, std::string& dataType) {
+    std::istringstream iss(field);
+    std::vector<std::string> tokens;
+    std::string token;
+    unsigned long size;
+    bson_t filter;
+
+    while (std::getline(iss, token, '.')) {
+        if (!token.empty())
+            tokens.push_back(token);
+    }
+    size = tokens.size();
+    filter = generate_unnested_filter(tokens.at(size - 1), term, dataType);
+
+    for (unsigned long i = size - 2; i >= 0; i--) {
+        filter = append_document(filter, tokens.at(i));
+    }
+    return filter;
+}
+
+bson_t Filter::append_document(bson_t& bson_doc, std::string& field) {
+    bson_t return_doc;
+    BSON_APPEND_DOCUMENT(&return_doc, field.c_str(), &bson_doc);
+    return return_doc;
+}
+
 // do not support nested query:
 // BSON_TYPE_DOCUMENT, BSON_TYPE_ARRAY, BSON_TYPE_REGEX, BSON_TYPE_CODEWSCOPE, BSON_TYPE_CODE
 
@@ -333,7 +360,7 @@ void Filter::generate_filters(std::vector<_bson_t>& filters) {
 
 // support: BSON_TYPE_DOUBLE, BSON_TYPE_UTF8, BSON_TYPE_BOOL, BSON_TYPE_DATE_TIME, BSON_TYPE_NULL, BSON_TYPE_SYMBOL
 // BSON_TYPE_INT32, BSON_TYPE_TIMESTAMP, BSON_TYPE_DECIMAL128, BSON_TYPE_MAXKEY, BSON_TYPE_MINKEY
-bson_t Filter::generate_filter(std::string& field, std::string& term, std::string& dataType) {
+bson_t Filter::generate_unnested_filter(std::string& field, std::string& term, std::string& dataType) {
 
     bson_t b;
     unsigned long _data_type;
