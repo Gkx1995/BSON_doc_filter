@@ -311,7 +311,7 @@ void Filter::generate_filters(std::vector<_bson_t>& filters) {
             for (unsigned i = 0; i < size; i++) {
 
                 try {
-                    filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
+                    filters.push_back(generate_unnested_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
                 } catch (const char *msg) {
                     std::cerr << msg << std::endl;
                 }
@@ -351,7 +351,7 @@ bson_t Filter::append_document(bson_t& bson_doc, std::string& field) {
     bson_t return_doc;
     return_doc = BSON_INITIALIZER;
     BSON_APPEND_DOCUMENT(&return_doc, field.c_str(), &bson_doc);
-    std::cout << "nested doc appended: " << bson_as_json(&return_doc, NULL) << std::endl;
+    std::cout << "nested filter appended: " << bson_as_json(&return_doc, NULL) << std::endl;
     return return_doc;
 }
 
