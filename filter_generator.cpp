@@ -311,7 +311,8 @@ void Filter::generate_filters(std::vector<_bson_t>& filters) {
             for (unsigned i = 0; i < size; i++) {
 
                 try {
-                    filters.push_back(generate_unnested_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
+                    std::cout << "filter is: " << bson_as_json(&generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)), NULL) << std::endl;
+                    filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
                 } catch (const char *msg) {
                     std::cerr << msg << std::endl;
                 }
@@ -334,6 +335,7 @@ bson_t Filter::generate_filter(std::string& field, std::string& term, std::strin
     unsigned long size;
     bson_t filter;
 
+    filter = BSON_INITIALIZER;
     while (std::getline(iss, token, '.')) {
         if (!token.empty())
             tokens.push_back(token);
