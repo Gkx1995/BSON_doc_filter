@@ -342,7 +342,7 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
         }
     }
     size = tokens.size();
-    std::cout << "token size: " << token << std::endl;
+    std::cout << "token size: " << size << std::endl;
     filter = generate_unnested_filter(tokens.at(size - 1), term, dataType);
 
     for (unsigned long i = size - 2; i >= 0; i--) {
