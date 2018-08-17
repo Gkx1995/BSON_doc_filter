@@ -344,10 +344,17 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
     size = tokens.size();
     filter = generate_unnested_filter(tokens.at(size - 1), term, dataType);
 
-    for (unsigned long i = size - 2; i > 0; i--) {
+//    for (unsigned long i = size - 2; i >= 0; --i) {
+//        filter = append_document(filter, tokens.at(i));
+//        std::cout << "index: " << i << std::endl;
+//    }
+    unsigned long i = size - 2;
+    while (i >= 0) {
         filter = append_document(filter, tokens.at(i));
+        --i;
         std::cout << "index: " << i << std::endl;
     }
+    
     std::cout << "ready to return " << std::endl;
     return filter;
 }
