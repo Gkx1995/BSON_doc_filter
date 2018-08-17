@@ -439,8 +439,8 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
         CHECK(should_insert(input_doc, q1) == true);
         std::string q2 = "where int32 document.a.b.c > 0";
         CHECK(should_insert(input_doc, q2) == true);
-        std::string q2 = "where int32 document.a.b.c < 5";
-        CHECK(should_insert(input_doc, q2) == true);
+        std::string q3 = "where int32 document.a.b.c < 5";
+        CHECK(should_insert(input_doc, q3) == true);
     }
 
 
