@@ -3,7 +3,7 @@
 int main() {
 
     //query sth matched with input doc
-    std::string query = "WHERE 0x02 utf8 = utf8 and 0x08 bool = 1 and 0x10 int32 >= 10 and 0x09 date_time > 9999 and 0x0E symbol = *** and 0x7F maxkey = maxkey and 0xFF minkey = minkey and 0x0A null = null and 0x13 decimal128 > 2222";
+    std::string query = "WHERE int32 document.a.b.c = 1";
 
     // select all, should return 1
 //    std::string query = "where *";

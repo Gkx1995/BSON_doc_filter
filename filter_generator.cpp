@@ -536,19 +536,35 @@ void Filter::print_filters() {
 bson_t* Filter::generate_input_doc() {
     bson_decimal128_t decimal128;
     bson_t* input_doc = bson_new();
+    bson_t* a = bson_new();
+    bson_t* b = bson_new();
+    bson_t* c = bson_new();
 
     BSON_APPEND_BOOL(input_doc, "bool", true);
-    BSON_APPEND_UTF8(input_doc, "utf8", "utf8");
-    BSON_APPEND_DOUBLE(input_doc, "double", 10.00);
-    BSON_APPEND_INT32(input_doc, "int32", 100);
-    BSON_APPEND_DATE_TIME(input_doc, "date_time", 999999);
+    BSON_APPEND_UTF8(input_doc, "utf8", "99");
+    BSON_APPEND_DOUBLE(input_doc, "double", 10.50);
+    BSON_APPEND_INT32(input_doc, "int32", 200);
+    BSON_APPEND_INT64(input_doc, "int64", 300);
+    BSON_APPEND_DATE_TIME(input_doc, "date_time", 400);
     BSON_APPEND_SYMBOL(input_doc, "symbol", "***");
     BSON_APPEND_MAXKEY(input_doc, "maxkey");
     BSON_APPEND_MINKEY(input_doc, "minkey");
     BSON_APPEND_NULL(input_doc, "null");
+    BSON_APPEND_INT32(input_doc, "in t 32", 1000);
+    BSON_APPEND_BOOL(input_doc, "b o o l", false);
 
-    bson_decimal128_from_string("999999", &decimal128);
+    BSON_APPEND_UTF8(input_doc, "utf 8", "utf 8");
+
+    BSON_APPEND_INT32(c, "c", 1);
+    BSON_APPEND_DOCUMENT(b, "b", c);
+    BSON_APPEND_DOCUMENT(a, "a", b);
+    BSON_APPEND_DOCUMENT(input_doc, "document", a);
+
+
+
+    bson_decimal128_from_string("500", &decimal128);
     BSON_APPEND_DECIMAL128(input_doc, "decimal128", &decimal128);
+//    std::cout << "input_doc is: " << bson_as_json(input_doc, NULL) << std::endl;
 
     return input_doc;
 
