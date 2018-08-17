@@ -191,7 +191,7 @@ Filter::~Filter() {
     delete(&arg_map);
 }
 
-bool Filter::should_insert(bson_t* input_doc) {
+bool Filter::should_insert(const bson_t* input_doc) {
 
     long filters_size = filters.size();
     bool should_insert;

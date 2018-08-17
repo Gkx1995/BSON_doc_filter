@@ -22,7 +22,7 @@ public:
     ~Filter();
 
     // entry point to filter input_doc
-    bool should_insert(bson_t* input_doc);
+    bool should_insert(const bson_t* input_doc);
 
     //////////////////////////////////////////////////////////
     // methods for testing
