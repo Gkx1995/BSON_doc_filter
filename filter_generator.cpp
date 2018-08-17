@@ -350,6 +350,7 @@ bson_t Filter::generate_filter(std::string& field, std::string& term, std::strin
 bson_t Filter::append_document(bson_t& bson_doc, std::string& field) {
     bson_t return_doc;
     BSON_APPEND_DOCUMENT(&return_doc, field.c_str(), &bson_doc);
+    std::cout << "nested doc appended: " << bson_as_json(&return_doc, NULL) << std::endl;
     return return_doc;
 }
 
