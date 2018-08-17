@@ -347,7 +347,9 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
 
     for (unsigned long i = size - 2; i >= 0; i--) {
         filter = append_document(filter, tokens.at(i));
+        std::cout << "index: " << i << std::endl;
     }
+    std::cout << "ready to return " << std::endl;
     return filter;
 }
 
