@@ -163,6 +163,7 @@ bson_t* generate_fixed_input_doc() {
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
+    BSON_APPEND_DOCUMENT(input_doc, "document", a);
 
 
 
@@ -434,7 +435,7 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
     }
 
     SECTION("Test nested query") {
-        std::string q1 = "where int32 a.b.c = 1";
+        std::string q1 = "where int32 document.a.b.c = 1";
         CHECK(should_insert(input_doc, q1) == true);
     }
 
