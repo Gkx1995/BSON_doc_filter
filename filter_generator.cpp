@@ -265,70 +265,89 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
 
         case BSON_TYPE_DOUBLE:
             BSON_APPEND_DOUBLE(b, key, value->value.v_double);
+            break;
 
         case BSON_TYPE_UTF8:
             BSON_APPEND_UTF8(b, key, value->value.v_utf8.str);
+            break;
 
         case BSON_TYPE_ARRAY: {
             uint32_t* array_len = 0;
             const uint8_t** array = NULL;
             bson_iter_array(iter, array_len, array);
             BSON_APPEND_ARRAY(b, key, bson_new_from_data(*array, *array_len));
+            break;
         }
         case BSON_TYPE_BINARY:
             BSON_APPEND_BINARY(b, key, value->value.v_binary.subtype, value->value.v_binary.data, value->value.v_binary.data_len);
+            break;
 
         case BSON_TYPE_UNDEFINED:
             return;
 
         case BSON_TYPE_OID:
             BSON_APPEND_OID(b, key, &value->value.v_oid);
+            break;
 
         case BSON_TYPE_BOOL:
             BSON_APPEND_BOOL(b, key, value->value.v_bool);
+            break;
 
         case BSON_TYPE_DATE_TIME:
             BSON_APPEND_DATE_TIME(b, key, value->value.v_datetime);
+            break;
 
         case BSON_TYPE_NULL:
             BSON_APPEND_NULL(b, key);
+            break;
 
         case BSON_TYPE_REGEX:
             BSON_APPEND_REGEX(b, key, value->value.v_regex.regex, value->value.v_regex.options);
+            break;
 
         case BSON_TYPE_DBPOINTER:
             BSON_APPEND_DBPOINTER(b, key, value->value.v_dbpointer.collection, &value->value.v_dbpointer.oid);
+            break;
 
         case BSON_TYPE_CODE:
             BSON_APPEND_CODE(b, key, value->value.v_code.code);
+            break;
 
         case BSON_TYPE_SYMBOL:
             BSON_APPEND_SYMBOL(b, key, value->value.v_symbol.symbol);
+            break;
 
         case BSON_TYPE_CODEWSCOPE:
             BSON_APPEND_CODE_WITH_SCOPE(b, key, value->value.v_codewscope.code,
                     bson_new_from_data(value->value.v_codewscope.scope_data, value->value.v_codewscope.scope_len));
+            break;
 
         case BSON_TYPE_INT32:
             BSON_APPEND_INT32(b, key, value->value.v_int32);
+            break;
 
         case BSON_TYPE_INT64:
             BSON_APPEND_INT64(b, key, value->value.v_int64);
+            break;
 
         case BSON_TYPE_TIMESTAMP:
             BSON_APPEND_TIMESTAMP(b, key, value->value.v_timestamp.timestamp, value->value.v_timestamp.increment);
+            break;
 
         case BSON_TYPE_DECIMAL128: {
             bson_decimal128_t* dec = NULL;
             bson_iter_decimal128(iter, dec);
             BSON_APPEND_DECIMAL128(b, key, dec);
+            break;
 
         }
         case BSON_TYPE_MAXKEY:
             BSON_APPEND_MAXKEY(b, key);
+            break;
 
         case BSON_TYPE_MINKEY:
             BSON_APPEND_MINKEY(b, key);
+            break;
     }
     bson_value_t value_t = *value;
     bson_value_destroy(&value_t);
