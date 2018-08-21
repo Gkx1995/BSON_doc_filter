@@ -484,6 +484,10 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
         CHECK(should_insert(input_doc, q2) == true);
         std::string q3 = "select * where int32 document.a.b.c < 5";
         CHECK(should_insert(input_doc, q3) == true);
+        std::string q4 = "select * where document document.a.b *";
+        CHECK(should_insert(input_doc, q4) == true);
+        std::string q5 = "select * where document document.a.b !";
+        CHECK(should_insert(input_doc, q5) == false);
     }
 
     delete(input_doc);
