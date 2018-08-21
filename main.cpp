@@ -3,7 +3,7 @@
 int main() {
 
     //query sth matched with input doc
-    std::string query = "select utf8,int32,document.a.b.c WHERE int32 document.a.b.c = 1";
+    std::string query = "select utf8,int32,document.a.b.c,x WHERE int32 document.a.b.c = 1";
 
     // select all, should return 1
 //    std::string query = "where *";
@@ -29,8 +29,11 @@ int main() {
     std::cout << "input doc is:\n" << bson_as_json(input_doc, NULL) << std::endl;
 
 //    std::cout << "input doc should be insert: " << should_input << std::endl;
-
-    std::cout << "projection of input_doc: " << bson_as_json(projection, NULL) << std::endl;
+    if (projection) {
+        std::cout << "projection of input_doc: " << bson_as_json(projection, NULL) << std::endl;
+    } else {
+        std::cout << "do not exist such projection" << std::endl;
+    }
 
 //    delete(filter);
     delete(input_doc);

@@ -64,9 +64,9 @@ namespace tao {
             // terms or fields without white space could either be quoted by single quote or not;
             // terms or fields with white space should be quoted by single quote, which means we could not
             // accept terms or fields with single quotes inside them
-            struct not_quoted_field: plus<not_one<32>> {};
-            struct nested_field: plus<not_one<39>>{};
-            struct single_quoted_field: seq<one<39>, nested_field,  one<39>> {};
+            struct not_quoted_field: plus<not_one<' '>> {};
+            struct nested_field: plus<not_one<'\''>>{};
+            struct single_quoted_field: seq<one<'\''>, nested_field,  one<'\''>> {};
             struct field: sor<single_quoted_field, not_quoted_field>{};
 
             struct not_exist: string<'!'>{};
@@ -75,13 +75,13 @@ namespace tao {
             struct relationType: sor<string<'<', '='>, string<'>', '='>, string<'!', '='>, string<'>'>,
                     string<'<'>, string<'='>> {};
 
-            struct not_quoted_term: plus<not_one<32>> {};
-            struct nested_term: plus<not_one<39>> {};
-            struct single_quoted_term: seq<one<39>, nested_term,  one<39>> {};
+            struct not_quoted_term: plus<not_one<' '>> {};
+            struct nested_term: plus<not_one<'\''>> {};
+            struct single_quoted_term: seq<one<'\''>, nested_term,  one<'\''>> {};
             struct term: sor<single_quoted_term, not_quoted_term>{};
             struct select_field: plus<not_one<' ', ','>> {};
             struct restriction: seq<dataType, blank, field, blank, sor< seq<relationType, blank, term>, exist_or_not>> {};
-            struct select_clause: seq<_select, blank, select_field, star<seq<one<44>, select_field>>>{};
+            struct select_clause: seq<_select, blank, select_field, star<seq<one<','>, select_field>>>{};
             struct grammar: must<select_clause, blank, _where, blank, sor<_all, seq<restriction, star<blank, boolType, blank, restriction>>>, eof>{};
 
 
@@ -206,12 +206,14 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
     bson_t* returned_doc;
     long selected_num;
     std::vector<std::string> selected_list;
+    long valid_selected_num;
 
     if (!should_insert(input_doc))
         return nullptr;
 
     selected_list = arg_map["selected"];
     selected_num = selected_list.size();
+    valid_selected_num = selected_num;
     std::cout << "selected_num = " << selected_num << std::endl;
 
     if (selected_num == 0 || selected_list.at(0) == "*")
@@ -224,7 +226,9 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
         std::string token;
         bson_iter_t iter;
         bson_t* element_doc;
+        bool valid_field;
 
+        valid_field = true;
         while (std::getline(iss, token, '.')) {
             if (!token.empty())
                 tokens.push_back(token);
@@ -232,9 +236,19 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
 
         bson_iter_init(&iter, input_doc);
         for (int j = 0; j < tokens.size(); j++) {
-            bson_iter_find(&iter, tokens.at(j).c_str());
-            std::cout << "field is " << bson_iter_key(&iter) << ", type = 0x" << std::hex << bson_iter_type(&iter) << std::endl;
-            bson_iter_recurse(&iter, &iter);
+
+            // input_doc does not contain this field, ignore this selected field
+            if (!(bson_iter_find(&iter, tokens.at(j).c_str()) && bson_iter_recurse(&iter, &iter))) {
+                std::cout << "field did not find: " << tokens.at(j) << ". Will ignore this selected field for projection." << std::endl;
+                valid_field = false;
+                break;
+            }
+        }
+
+        // ignore this selected field and loop next one, decrease valid num
+        if (!valid_field) {
+            valid_selected_num--;
+            continue;
         }
 
         if (tokens.size() == 1) {
@@ -249,7 +263,9 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
         }
     }
 
-    return returned_doc;
+    if (valid_selected_num > 0)
+        return returned_doc;
+    return nullptr;
 }
 
 void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
@@ -351,8 +367,6 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
             BSON_APPEND_MINKEY(b, key);
             break;
     }
-
-    std::cout << "basic element doc generated: " << bson_as_json(b, NULL) << std::endl;
 }
 
 bool Filter::should_insert(const bson_t* input_doc) {
