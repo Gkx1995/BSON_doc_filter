@@ -349,6 +349,8 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
             BSON_APPEND_MINKEY(b, key);
             break;
     }
+
+    std::cout << "basic element doc generated: " << bson_as_json(b, NULL) << std::endl;
 }
 
 bool Filter::should_insert(const bson_t* input_doc) {
