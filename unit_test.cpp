@@ -77,10 +77,12 @@ TEST_CASE("Test projections", "[get_input_doc_if_satisfied_filter]") {
     const bson_t* valid_doc_1 = generate_fixed_input_doc();
     CHECK(is_identical(output_doc_1, valid_doc_1) == true);
 
-    if (input_doc)
+    if (input_doc == output_doc_1)
         delete (input_doc);
-    if (output_doc_1)
+    else {
         delete (output_doc_1);
+        delete (input_doc);
+    }
     if (valid_doc_1)
         delete (valid_doc_1);
 }
