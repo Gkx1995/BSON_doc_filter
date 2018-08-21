@@ -69,7 +69,7 @@ bool is_identical(const bson_t* l, const bson_t* r) {
     return l_len == r_len && memcmp(l_doc, r_doc, l_len) == 0;
 }
 
-TEST_CASE("Test projections", "[get_input_doc_if_satisfied_filter]") {
+TEST_CASE("Test projections: select *", "[get_input_doc_if_satisfied_filter]") {
     bson_t *input_doc = generate_fixed_input_doc();
 
     std::string q1 = "select *";
@@ -85,6 +85,141 @@ TEST_CASE("Test projections", "[get_input_doc_if_satisfied_filter]") {
     }
     if (valid_doc_1)
         delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select int32", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select int32";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    BSON_APPEND_INT32(valid_doc_1, "int32", 200);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select document.a.b.c", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select document.a.b.c";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_t* a = bson_new();
+    bson_t* b = bson_new();
+    bson_t* c = bson_new();
+    BSON_APPEND_INT32(c, "c", 1);
+    BSON_APPEND_DOCUMENT(b, "b", c);
+    BSON_APPEND_DOCUMENT(a, "a", b);
+    BSON_APPEND_DOCUMENT(valid_doc_1, "document", a);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select wrong_doc.a.b.c", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select wrong_doc.a.b.c";
+    // should return nullptr
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+
+
+    CHECK(!output_doc_1);
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+}
+
+TEST_CASE("Test projections: select document.a.b.c, int32", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select document.a.b.c";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_t* a = bson_new();
+    bson_t* b = bson_new();
+    bson_t* c = bson_new();
+    BSON_APPEND_INT32(c, "c", 1);
+    BSON_APPEND_DOCUMENT(b, "b", c);
+    BSON_APPEND_DOCUMENT(a, "a", b);
+    BSON_APPEND_DOCUMENT(valid_doc_1, "document", a);
+    BSON_APPEND_INT32(valid_doc_1, "int32", 200);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey *", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select document.a.b.c,int32 where maxkey maxkey *";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_t* a = bson_new();
+    bson_t* b = bson_new();
+    bson_t* c = bson_new();
+    BSON_APPEND_INT32(c, "c", 1);
+    BSON_APPEND_DOCUMENT(b, "b", c);
+    BSON_APPEND_DOCUMENT(a, "a", b);
+    BSON_APPEND_DOCUMENT(valid_doc_1, "document", a);
+    BSON_APPEND_INT32(valid_doc_1, "int32", 200);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey !", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select document.a.b.c,int32 where maxkey maxkey !";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+
+
+    CHECK(!output_doc_1);
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
 }
 
 TEST_CASE("Test 6 numeric operators", "[should_insert]") {
@@ -290,7 +425,7 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
         std::string q1 = "select * where minkey minkey !";
         CHECK(should_insert(input_doc, q1) == false);
 
-        std::string q2 = "select * where minkey minkey = *";
+        std::string q2 = "select * where minkey minkey *";
         CHECK(should_insert(input_doc, q2) == true);
 
         std::string q3 = "select * where decimal128 minkey = 300";
