@@ -3,7 +3,7 @@
 int main() {
 
     //query sth matched with input doc
-    std::string query = "select utf8 WHERE int32 document.a.b.c = 1";
+    std::string query = "select utf8,document.a.b.c WHERE int32 document.a.b.c = 1";
 
     // select all, should return 1
 //    std::string query = "where *";

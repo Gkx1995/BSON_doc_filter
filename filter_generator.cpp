@@ -349,8 +349,6 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
             BSON_APPEND_MINKEY(b, key);
             break;
     }
-    bson_value_t value_t = *value;
-    bson_value_destroy(&value_t);
 }
 
 bool Filter::should_insert(const bson_t* input_doc) {
