@@ -3,6 +3,7 @@
 //
 
 #include <tao/pegtl.hpp>
+#include <libbson-1.0/bson-types.h>
 #include "filter_generator.h"
 
 //////////////////////////////////////////////////////////
@@ -13,12 +14,15 @@ namespace tao {
     namespace pegtl {
         namespace test {
 
-
+            const std::string PLACE_HOLDER = "0";
             //////////////////////////////////////////////////////////
             // PEGTL rules
             //////////////////////////////////////////////////////////
 
-            const std::string PLACE_HOLDER = "0";
+
+
+
+            struct _select: sor<TAO_PEGTL_STRING("select"), TAO_PEGTL_STRING("SELECT")>{};
             struct _where : sor<string<'W', 'H', 'E', 'R', 'E'>, string<'w', 'h', 'e', 'r', 'e'>> {};
             struct _and: sor<string<'A', 'N', 'D'>, string<'a', 'n', 'd'>>{};
             struct _or: sor<string<'O', 'R'>, string<'o', 'r'>>{};
@@ -76,9 +80,10 @@ namespace tao {
             struct nested_term: plus<not_one<39>> {};
             struct single_quoted_term: seq<one<39>, nested_term,  one<39>> {};
             struct term: sor<single_quoted_term, not_quoted_term>{};
-
+            struct select_field: plus<not_one<32>> {};
             struct restriction: seq<dataType, blank, field, blank, sor< seq<relationType, blank, term>, exist_or_not>> {};
-            struct grammar: must<_where, blank, sor<_all, seq<restriction, star<blank, boolType, blank, restriction>>>, eof>{};
+            struct select_clause: seq<_select, sor<seq<blank, _all>, plus<seq<blank, select_field>>>>{};
+            struct grammar: must<select_clause, blank, _where, blank, sor<_all, seq<restriction, star<blank, boolType, blank, restriction>>>, eof>{};
 
 
             //////////////////////////////////////////////////////////
@@ -91,7 +96,14 @@ namespace tao {
 
             // Specialisation of the user-defined action to do something when the 'name' rule succeeds;
             // is called with the portion of the input that matched the rule.
+            template<> struct action< select_field > {
+                template <typename Input>
+                static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
+                    arg_map["selected"].push_back(in.string());
 
+                    std::cout << "selected matched: " << in.string() << std::endl;
+                }
+            };
             template<> struct action< nested_field > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
@@ -189,6 +201,136 @@ Filter::~Filter() {
         bson_destroy(filters.at(i));
     }
     delete(&arg_map);
+}
+
+const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
+    bson_t* returned_doc;
+    long selected_num;
+    std::vector<std::string> selected_list;
+
+    if (!should_insert(input_doc))
+        return nullptr;
+
+    selected_list = arg_map["selected"];
+    selected_num = selected_list.size();
+    if (selected_num == 0 || selected_list.at(0) == "*")
+        return input_doc;
+
+    returned_doc = bson_new();
+    for (long i = 0; i < selected_num; ++i) {
+        std::istringstream iss(selected_list.at(i));
+        std::vector<std::string> tokens;
+        std::string token;
+        bson_iter_t iter;
+        bson_t* element_doc;
+
+        while (std::getline(iss, token, '.')) {
+            if (!token.empty())
+                tokens.push_back(token);
+        }
+
+        bson_iter_init(&iter, input_doc);
+        for (int j = 0; j < tokens.size(); j++) {
+            bson_iter_find(&iter, tokens.at(j).c_str());
+        }
+
+        if (tokens.size() == 1) {
+            generate_basic_element_doc(returned_doc, &iter);
+        } else {
+            element_doc = bson_new();
+            generate_basic_element_doc(element_doc, &iter);
+            for (long j = tokens.size() - 2; j > 0; j--) {
+                element_doc = append_document(element_doc, tokens.at(j));
+            }
+            BSON_APPEND_DOCUMENT(returned_doc, tokens.at(0).c_str(), element_doc);
+        }
+    }
+
+    return returned_doc;
+}
+
+void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
+    const char* key;
+    bson_type_t type;
+    const bson_value_t* value;
+
+    key = bson_iter_key(iter);
+    type = bson_iter_type(iter);
+    value = bson_iter_value(iter);
+
+    switch (type) {
+        case BSON_TYPE_EOD:
+            return;
+
+        case BSON_TYPE_DOUBLE:
+            BSON_APPEND_DOUBLE(b, key, value->value.v_double);
+
+        case BSON_TYPE_UTF8:
+            BSON_APPEND_UTF8(b, key, value->value.v_utf8.str);
+
+        case BSON_TYPE_ARRAY: {
+            uint32_t* array_len = 0;
+            const uint8_t** array = NULL;
+            bson_iter_array(iter, array_len, array);
+            BSON_APPEND_ARRAY(b, key, bson_new_from_data(*array, *array_len));
+        }
+        case BSON_TYPE_BINARY:
+            BSON_APPEND_BINARY(b, key, value->value.v_binary.subtype, value->value.v_binary.data, value->value.v_binary.data_len);
+
+        case BSON_TYPE_UNDEFINED:
+            return;
+
+        case BSON_TYPE_OID:
+            BSON_APPEND_OID(b, key, &value->value.v_oid);
+
+        case BSON_TYPE_BOOL:
+            BSON_APPEND_BOOL(b, key, value->value.v_bool);
+
+        case BSON_TYPE_DATE_TIME:
+            BSON_APPEND_DATE_TIME(b, key, value->value.v_datetime);
+
+        case BSON_TYPE_NULL:
+            BSON_APPEND_NULL(b, key);
+
+        case BSON_TYPE_REGEX:
+            BSON_APPEND_REGEX(b, key, value->value.v_regex.regex, value->value.v_regex.options);
+
+        case BSON_TYPE_DBPOINTER:
+            BSON_APPEND_DBPOINTER(b, key, value->value.v_dbpointer.collection, &value->value.v_dbpointer.oid);
+
+        case BSON_TYPE_CODE:
+            BSON_APPEND_CODE(b, key, value->value.v_code.code);
+
+        case BSON_TYPE_SYMBOL:
+            BSON_APPEND_SYMBOL(b, key, value->value.v_symbol.symbol);
+
+        case BSON_TYPE_CODEWSCOPE:
+            BSON_APPEND_CODE_WITH_SCOPE(b, key, value->value.v_codewscope.code,
+                    bson_new_from_data(value->value.v_codewscope.scope_data, value->value.v_codewscope.scope_len));
+
+        case BSON_TYPE_INT32:
+            BSON_APPEND_INT32(b, key, value->value.v_int32);
+
+        case BSON_TYPE_INT64:
+            BSON_APPEND_INT64(b, key, value->value.v_int64);
+
+        case BSON_TYPE_TIMESTAMP:
+            BSON_APPEND_TIMESTAMP(b, key, value->value.v_timestamp.timestamp, value->value.v_timestamp.increment);
+
+        case BSON_TYPE_DECIMAL128: {
+            bson_decimal128_t* dec = NULL;
+            bson_iter_decimal128(iter, dec);
+            BSON_APPEND_DECIMAL128(b, key, dec);
+
+        }
+        case BSON_TYPE_MAXKEY:
+            BSON_APPEND_MAXKEY(b, key);
+
+        case BSON_TYPE_MINKEY:
+            BSON_APPEND_MINKEY(b, key);
+    }
+    bson_value_t value_t = *value;
+    bson_value_destroy(&value_t);
 }
 
 bool Filter::should_insert(const bson_t* input_doc) {
@@ -334,7 +476,6 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
     std::string token;
     long size;
     bson_t* filter;
-    bson_t* rst_filter;
 
     while (std::getline(iss, token, '.')) {
         if (!token.empty()) {
@@ -356,7 +497,7 @@ bson_t* Filter::append_document(bson_t* bson_doc, std::string& field) {
     bson_t* return_doc;
     return_doc = bson_new();
     BSON_APPEND_DOCUMENT(return_doc, field.c_str(), bson_doc);
-    std::cout << "nested filter appended: " << bson_as_json(return_doc, NULL) << std::endl;
+    std::cout << "nested doc appended: " << bson_as_json(return_doc, NULL) << std::endl;
     return return_doc;
 }
 
@@ -497,6 +638,7 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
 
     return b;
 }
+
 
 bool Filter::filter_satisfied (int flag, std::string& _operator) {
 

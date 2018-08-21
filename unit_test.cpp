@@ -443,7 +443,6 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
         CHECK(should_insert(input_doc, q3) == true);
     }
 
-
     delete(input_doc);
 }
 
