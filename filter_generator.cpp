@@ -212,6 +212,8 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
 
     selected_list = arg_map["selected"];
     selected_num = selected_list.size();
+    std::cout << "selected_num = " << selected_num << std::endl;
+
     if (selected_num == 0 || selected_list.at(0) == "*")
         return input_doc;
 
@@ -452,7 +454,6 @@ void Filter::generate_filters() {
             for (long i = 0; i < size; i++) {
 
                 try {
-                    std::cout << "filter is: " << bson_as_json(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)), NULL) << std::endl;
                     filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
                 } catch (const char *msg) {
                     std::cerr << msg << std::endl;
@@ -486,7 +487,7 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
 
     for (long i = size - 2; i >= 0; --i) {
         filter = append_document(filter, tokens.at(i));
-        std::cout << "index: " << i << std::endl;
+//        std::cout << "index: " << i << std::endl;
     }
 
     return filter;
