@@ -77,9 +77,12 @@ TEST_CASE("Test projections", "[get_input_doc_if_satisfied_filter]") {
     const bson_t* valid_doc_1 = generate_fixed_input_doc();
     CHECK(is_identical(output_doc_1, valid_doc_1) == true);
 
-    delete (input_doc);
-    delete (output_doc_1);
-    delete (valid_doc_1);
+    if (input_doc)
+        delete (input_doc);
+    if (output_doc_1)
+        delete (output_doc_1);
+    if (valid_doc_1)
+        delete (valid_doc_1);
 }
 
 TEST_CASE("Test 6 numeric operators", "[should_insert]") {
