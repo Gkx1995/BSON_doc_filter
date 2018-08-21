@@ -209,6 +209,7 @@ TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey !",
     bson_t *input_doc = generate_fixed_input_doc();
 
     std::string q1 = "select document.a.b.c,int32 where maxkey maxkey !";
+    // should return nullptr
     const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
 
 
