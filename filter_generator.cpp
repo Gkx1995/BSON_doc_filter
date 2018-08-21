@@ -234,7 +234,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
         for (int j = 0; j < tokens.size(); j++) {
             bson_iter_find(&iter, tokens.at(j).c_str());
             bson_iter_recurse(&iter, &iter);
-            std::cout << "field is " << tokens.at(i) << ", type = " << bson_iter_type(&iter) << std::endl;
+            std::cout << "field is " << tokens.at(j) << ", type = " << bson_iter_type(&iter) << std::endl;
         }
 
         if (tokens.size() == 1) {
