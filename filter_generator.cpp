@@ -235,6 +235,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
             bson_iter_find(&iter, tokens.at(j).c_str());
             std::cout << j << std::endl;
         }
+        std::cout << "type = " << bson_iter_type(&iter) << std::endl;
 
         if (tokens.size() == 1) {
             generate_basic_element_doc(returned_doc, &iter);
