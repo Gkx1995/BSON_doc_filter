@@ -238,11 +238,16 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
         for (int j = 0; j < tokens.size(); j++) {
 
             // input_doc does not contain this field, ignore this selected field
-            if (!(bson_iter_find(&iter, tokens.at(j).c_str()) && bson_iter_recurse(&iter, &iter))) {
+            if (j < tokens.size() - 1 && !(bson_iter_find(&iter, tokens.at(j).c_str()) && bson_iter_recurse(&iter, &iter))) {
+                std::cout << "field did not find: " << tokens.at(j) << ". Will ignore this selected field for projection." << std::endl;
+                valid_field = false;
+                break;
+            } else if (j == tokens.size() - 1 && !bson_iter_find(&iter, tokens.at(j).c_str())) {
                 std::cout << "field did not find: " << tokens.at(j) << ". Will ignore this selected field for projection." << std::endl;
                 valid_field = false;
                 break;
             }
+
         }
 
         // ignore this selected field and loop next one, decrease valid num
