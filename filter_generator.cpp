@@ -302,6 +302,13 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
             BSON_APPEND_ARRAY(b, key, bson_new_from_data(*array, *array_len));
             break;
         }
+        case BSON_TYPE_DOCUMENT: {
+            uint32_t* doc_len = 0;
+            const uint8_t** doc = NULL;
+            bson_iter_document(iter, doc_len, doc);
+            BSON_APPEND_ARRAY(b, key, bson_new_from_data(*doc, *doc_len));
+            break;
+        }
         case BSON_TYPE_BINARY:
             BSON_APPEND_BINARY(b, key, value->value.v_binary.subtype, value->value.v_binary.data, value->value.v_binary.data_len);
             break;
@@ -506,7 +513,7 @@ void Filter::generate_filters() {
         }
     } else {
         //TODO: throw not found exceptions
-        throw "Error: Query parsed wrong! Missing field or term or dataType!";
+        std::cout << "We do not have filters for this retrieve command!" << std::endl;
     }
 }
 
