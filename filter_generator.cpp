@@ -296,15 +296,14 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
             break;
 
         case BSON_TYPE_ARRAY: {
-            uint32_t* array_len = 0;
-            const uint8_t** array = NULL;
-            bson_iter_array(iter, array_len, array);
-            BSON_APPEND_ARRAY(b, key, bson_new_from_data(*array, *array_len));
+            uint32_t array_len = 0;
+            const uint8_t* array = NULL;
+            bson_iter_array(iter, &array_len, &array);
+            BSON_APPEND_ARRAY(b, key, bson_new_from_data(array, array_len));
             break;
         }
         case BSON_TYPE_DOCUMENT: {
             uint32_t doc_len = 0;
-//            const uint8_t** doc = NULL;
             const uint8_t * doc = NULL;
             bson_iter_document(iter, &doc_len, &doc);
             BSON_APPEND_DOCUMENT(b, key, bson_new_from_data(doc, doc_len));
