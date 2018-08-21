@@ -3,7 +3,6 @@
 //
 
 #include <tao/pegtl.hpp>
-#include <libbson-1.0/bson-types.h>
 #include "filter_generator.h"
 
 //////////////////////////////////////////////////////////
@@ -80,9 +79,9 @@ namespace tao {
             struct nested_term: plus<not_one<39>> {};
             struct single_quoted_term: seq<one<39>, nested_term,  one<39>> {};
             struct term: sor<single_quoted_term, not_quoted_term>{};
-            struct select_field: plus<not_one<32>> {};
+            struct select_field: seq<plus<not_one<32>>>{};
             struct restriction: seq<dataType, blank, field, blank, sor< seq<relationType, blank, term>, exist_or_not>> {};
-            struct select_clause: seq<_select, sor<seq<blank, _all>, plus<seq<blank, select_field>>>>{};
+            struct select_clause: seq<_select, blank, sor<_all, select_field>, star<seq<one<44>, select_field>>>{};
             struct grammar: must<select_clause, blank, _where, blank, sor<_all, seq<restriction, star<blank, boolType, blank, restriction>>>, eof>{};
 
 
