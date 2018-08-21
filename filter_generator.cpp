@@ -232,9 +232,8 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
 
         bson_iter_init(&iter, input_doc);
         for (int j = 0; j < tokens.size(); j++) {
-            if (!bson_iter_find(&iter, tokens.at(j).c_str())) {
-                std::cout << "Loop " << j << " did not find valid key." << std::endl;
-                return nullptr;
+            if (!(bson_iter_find(&iter, tokens.at(j).c_str()) && bson_iter_recurse(&iter, &iter))) {
+                std::cerr << "Loop " << j << " did not find valid key." << std::endl;
             };
         }
         std::cout << "type = " << bson_iter_type(&iter) << std::endl;
