@@ -82,7 +82,8 @@ namespace tao {
             struct select_field: plus<not_one<' ', ','>> {};
             struct restriction: seq<dataType, blank, field, blank, sor< seq<relationType, blank, term>, exist_or_not>> {};
             struct select_clause: seq<_select, blank, select_field, star<seq<one<','>, select_field>>>{};
-            struct grammar: must<select_clause, blank, _where, blank, sor<_all, seq<restriction, star<blank, boolType, blank, restriction>>>, eof>{};
+            struct where_clause: seq<_where, blank, sor<_all, seq<restriction, star<blank, boolType, blank, restriction>>>> {};
+            struct grammar: must<select_clause, opt<blank, where_clause>, eof>{};
 
 
             //////////////////////////////////////////////////////////
