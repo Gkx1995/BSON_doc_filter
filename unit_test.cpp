@@ -8,11 +8,12 @@
 
 bson_t* generate_fixed_input_doc() {
     bson_decimal128_t decimal128;
-    bson_t* input_doc = bson_new();
+    bson_t* input_doc;
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
 
+    input_doc = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "{", "baz_1", BCON_INT32 (1), "}", "]", "}");
     BSON_APPEND_BOOL(input_doc, "bool", true);
     BSON_APPEND_UTF8(input_doc, "utf8", "99");
     BSON_APPEND_DOUBLE(input_doc, "double", 10.50);
@@ -488,6 +489,10 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
         CHECK(should_insert(input_doc, q4) == true);
         std::string q5 = "select * where int32 document.a.b.c !";
         CHECK(should_insert(input_doc, q5) == false);
+        std::string q6 = "select * where int32 foo.bar.1.baz_1 = 1";
+        CHECK(should_insert(input_doc, q6) == true);
+        std::string q7 = "select * where int32 foo.bar *";
+        CHECK(should_insert(input_doc, q7) == true);
     }
 
     delete(input_doc);

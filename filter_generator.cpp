@@ -398,46 +398,60 @@ bool Filter::should_insert(const bson_t* input_doc) {
         bson_iter_t doc_iter;
         bson_iter_t target_iter;
         bson_iter_t filter_iter;
-        std::string field;
+        std::string _field;
+        std::string _operator;
+        std::string _datatype;
         std::cout << "Input doc: " << bson_as_json(input_doc, NULL) << std::endl;
 
-        // check if the filter is a not-notation key or not
-        field = arg_map["field"].at(i);
-        if (field.find('.') != std::string::npos) {
+        _field = arg_map["field"].at(i);
+        _operator = arg_map["relationType"].at(i);
+        _datatype = arg_map["dataType"].at(i);
 
-            // check if input doc contains this dot field
-            if (bson_iter_init(&doc_iter, input_doc) && bson_iter_find_descendant(&doc_iter, field.c_str(), &target_iter)) {
-                int cmp_rst;
-                bson_iter_init(&filter_iter, filters.at(i));
-                bson_iter_next(&filter_iter);
-                std::cout << "target iter type: " << bson_iter_type(&target_iter) << ", filter iter type: " << bson_iter_type(&filter_iter) << std::endl;
-                cmp_rst = filter_compare_elements(&target_iter, &filter_iter);
-                if (cmp_rst == IGNORE_NUM) {
+        // first handle * and ! operator
+        if (_operator == "*" || _operator == "!") {
+            bool exists;
+
+            // check existence of field
+            exists = bson_iter_init(&doc_iter, input_doc)
+                    && bson_iter_find_descendant(&doc_iter, _field.c_str(), &target_iter)
+                    && bson_iter_type(&target_iter) == data_type_map[_datatype];
+
+            flag = exists ? 0 : IGNORE_NUM;
+        }
+
+        // handle normal operators
+        else {
+            // check if the filter is a not-notation key or not
+            if (_field.find('.') != std::string::npos) {
+
+                // check if input doc contains this dot field
+                if (bson_iter_init(&doc_iter, input_doc) && bson_iter_find_descendant(&doc_iter, _field.c_str(), &target_iter)) {
+                    int cmp_rst;
+                    bson_iter_init(&filter_iter, filters.at(i));
+                    bson_iter_next(&filter_iter);
+//                std::cout << "target iter type: " << bson_iter_type(&target_iter) << ", filter iter type: " << bson_iter_type(&filter_iter) << std::endl;
+                    cmp_rst = filter_compare_elements(&target_iter, &filter_iter);
+                    if (cmp_rst == IGNORE_NUM) {
+                        flag = IGNORE_NUM;
+                    }
+                    else if (cmp_rst > 0) {
+                        flag = 1;
+                    } else {
+                        flag = cmp_rst < 0 ? -1 : 0;
+                    }
+
+                    // did not find this dot field
+                } else {
                     flag = IGNORE_NUM;
                 }
-                else if (cmp_rst > 0) {
-                    flag = 1;
-                } else {
-                    flag = cmp_rst < 0 ? -1 : 0;
-                }
-            // did not find this field
             } else {
-                flag = IGNORE_NUM;
+                flag = filter_compare_object(input_doc, filters.at(i));
             }
-        } else {
-            flag = filter_compare_object(input_doc, filters.at(i));
         }
+
         std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << ", flag: " << flag << std::endl;
 
-//        if (flag == IGNORE_NUM) {
-//            if (arg_map["relationType"].at(i) == "!")
-//                filter_satisfied_arr[i] = true;
-//            else
-//                filter_satisfied_arr[i] = false;
-//        } else {
-//            filter_satisfied_arr[i] = filter_satisfied(flag, arg_map["relationType"].at(i));
-//        }
-        filter_satisfied_arr[i] = filter_satisfied(flag, arg_map["relationType"].at(i));
+        filter_satisfied_arr[i] = filter_satisfied(flag, _operator);
         std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << " satisfied : " << filter_satisfied_arr[i] << std::endl;
     }
 
@@ -563,11 +577,6 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
     }
     size = tokens.size();
     filter = generate_unnested_filter(tokens.at(size - 1), term, dataType);
-
-//    for (long i = size - 2; i >= 0; --i) {
-//        filter = append_document(filter, tokens.at(i));
-//        std::cout << "index: " << i << std::endl;
-//    }
 
     return filter;
 }
