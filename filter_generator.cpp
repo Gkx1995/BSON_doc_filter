@@ -545,7 +545,7 @@ void Filter::generate_filters() {
         if (field_list.size() == term_list.size()
         && data_type_list.size() == term_list.size()) {
 
-            long size = term_list.size();
+            long size = field_list.size();
             for (long i = 0; i < size; i++) {
                 if (_operator_list.at(i) != "*" && _operator_list.at(i) != "!") {
                     try {
