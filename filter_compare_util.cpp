@@ -428,7 +428,7 @@ int filter_compare_iterators(bson_iter_t *l, bson_iter_t *r)
         r_valid = bson_iter_next(r);
         l_valid = false;
         if (r_valid) {
-            cout << "Key:" << bson_iter_key(r) << endl;
+            cout << "filter field: " << bson_iter_key(r) << endl;
             l_valid = bson_iter_find(l, bson_iter_key(r));
 
         }

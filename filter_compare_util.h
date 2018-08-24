@@ -36,6 +36,7 @@ permission is obtained from Datos IO, Inc.
 const int IGNORE_NUM = INT_MAX;
 
 int filter_compare_iterators(bson_iter_t *l, bson_iter_t *r);
+int filter_compare_elements(bson_iter_t *l, bson_iter_t *r);
 int filter_compare_object(const bson_t *l, bson_t *r);
 
 #endif /* __BSON_UTIL_H__ */

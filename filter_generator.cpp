@@ -408,7 +408,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
             // check if input doc contains this dot field
             if (bson_iter_init(&doc_iter, input_doc) && bson_iter_find_descendant(&doc_iter, field.c_str(), &target_iter)) {
                 bson_iter_init(&filter_iter, filters.at(i));
-                flag = filter_compare_iterators(&target_iter, &filter_iter);
+                flag = filter_compare_elements(&target_iter, &filter_iter);
             } else {
                 flag = IGNORE_NUM;
             }
