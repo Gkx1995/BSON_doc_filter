@@ -208,10 +208,10 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
     long selected_num;
     std::vector<std::string> selected_list;
     long valid_selected_num;
-    std::cout << "haha" << std::endl;
+
     if (!should_insert(input_doc))
         return nullptr;
-    std::cout << "haha2" << std::endl;
+
     selected_list = arg_map["selected"];
     selected_num = selected_list.size();
     valid_selected_num = selected_num;
@@ -402,7 +402,9 @@ bool Filter::should_insert(const bson_t* input_doc) {
         std::string _field;
         std::string _operator;
         std::string _datatype;
+        std::cout << "haha" << std::endl;
         std::cout << "Input doc: " << bson_as_json(input_doc, NULL) << std::endl;
+        std::cout << "haha1" << std::endl;
 
         _field = arg_map["field"].at(i);
         _operator = arg_map["relationType"].at(i);
