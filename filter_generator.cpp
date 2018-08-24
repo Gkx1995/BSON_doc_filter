@@ -394,8 +394,27 @@ bool Filter::should_insert(const bson_t* input_doc) {
     auto* filter_satisfied_arr = new bool[filters_size];
 
     for (long i = 0; i < filters_size; i++) {
+        int flag;
+        bson_iter_t doc_iter;
+        bson_iter_t target_iter;
+        bson_iter_t filter_iter;
+        std::string field;
         std::cout << "Input doc: " << bson_as_json(input_doc, NULL) << std::endl;
-        int flag = filter_compare_object(input_doc, filters.at(i));
+
+        // check if the filter is a not-notation key or not
+        field = arg_map["field"].at(i);
+        if (field.find('.') != std::string::npos) {
+
+            // check if input doc contains this dot field
+            if (bson_iter_init(&doc_iter, input_doc) && bson_iter_find_descendant(&doc_iter, field.c_str(), &target_iter)) {
+                bson_iter_init(&filter_iter, filters.at(i));
+                flag = filter_compare_iterators(&target_iter, &filter_iter);
+            } else {
+                flag = IGNORE_NUM;
+            }
+        } else {
+            flag = filter_compare_object(input_doc, filters.at(i));
+        }
         std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << ", flag: " << flag << std::endl;
 
 //        if (flag == IGNORE_NUM) {
@@ -533,10 +552,10 @@ bson_t* Filter::generate_filter(std::string& field, std::string& term, std::stri
     size = tokens.size();
     filter = generate_unnested_filter(tokens.at(size - 1), term, dataType);
 
-    for (long i = size - 2; i >= 0; --i) {
-        filter = append_document(filter, tokens.at(i));
+//    for (long i = size - 2; i >= 0; --i) {
+//        filter = append_document(filter, tokens.at(i));
 //        std::cout << "index: " << i << std::endl;
-    }
+//    }
 
     return filter;
 }

@@ -422,6 +422,7 @@ int filter_compare_elements(bson_iter_t *l, bson_iter_t *r)
 int filter_compare_iterators(bson_iter_t *l, bson_iter_t *r)
 {
     bool l_valid, r_valid;
+    int cmp_rst;
 
     while (true) {
         r_valid = bson_iter_next(r);
@@ -437,29 +438,30 @@ int filter_compare_iterators(bson_iter_t *l, bson_iter_t *r)
         if (!r_valid)
             return IGNORE_NUM;
 
-        return filter_compare_elements(l, r);
+        cmp_rst = filter_compare_elements(l, r);
+
+        if (cmp_rst == IGNORE_NUM) {
+            return IGNORE_NUM;
+        }
+        else if (cmp_rst > 0) {
+            return 1;
+        } else {
+            return cmp_rst < 0 ? -1 : 0;
+        }
     }
 }
 
 int filter_compare_object(const bson_t *l, bson_t *r)
 {
     bson_iter_t l_iter, r_iter;
-    int cmp_rst;
 
     /* initialize */
     bson_iter_init(&l_iter, l);
     bson_iter_init(&r_iter, r);
 
-    cmp_rst = filter_compare_iterators(&l_iter, &r_iter);
+    return filter_compare_iterators(&l_iter, &r_iter);
 
-    if (cmp_rst == IGNORE_NUM) {
-        return IGNORE_NUM;
-    }
-    else if (cmp_rst > 0) {
-        return 1;
-    } else {
-        return cmp_rst < 0 ? -1 : 0;
-    }
+
 }
 
 
