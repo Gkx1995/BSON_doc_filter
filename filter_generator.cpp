@@ -413,9 +413,11 @@ bool Filter::should_insert(const bson_t* input_doc) {
             bool exists;
 
             // check existence of field
+            std::cout << "haha1" << std::endl;
             exists = bson_iter_init(&doc_iter, input_doc)
                     && bson_iter_find_descendant(&doc_iter, _field.c_str(), &target_iter)
                     && bson_iter_type(&target_iter) == data_type_map[_datatype];
+            std::cout << "haha2" << std::endl;
 
             flag = exists ? 0 : IGNORE_NUM;
         }
@@ -544,14 +546,11 @@ void Filter::generate_filters() {
 
         if (field_list.size() == term_list.size()
         && data_type_list.size() == term_list.size()) {
-            std::cout << "haha1" << std::endl;
             long size = field_list.size();
             for (long i = 0; i < size; i++) {
                 if (_operator_list.at(i) != "*" && _operator_list.at(i) != "!") {
-                    std::cout << "haha1" << std::endl;
                     try {
                         filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
-                        std::cout << "haha2" << std::endl;
                     } catch (const char *msg) {
                         std::cerr << msg << std::endl;
                     }
