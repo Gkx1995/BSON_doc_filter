@@ -394,7 +394,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
 
     auto* restrictions_satisfied_arr = new bool[restrictions_count];
 
-    for (long i = 0, filter_idx = 0; i < restrictions_count; i++) {
+    for (long i = 0, filter_idx = 0; i < restrictions_count && filter_idx < filters_count; i++) {
         int flag;
         bson_iter_t doc_iter;
         bson_iter_t target_iter;
@@ -448,6 +448,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
             } else {
                 flag = filter_compare_object(input_doc, filters.at(filter_idx));
             }
+            filter_idx++;
         }
 
         restrictions_satisfied_arr[i] = filter_satisfied(flag, _operator);
