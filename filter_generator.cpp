@@ -394,7 +394,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
 
     auto* restrictions_satisfied_arr = new bool[restrictions_count];
 
-    for (long i = 0; i < restrictions_count; i++) {
+    for (long i = 0, filter_idx = 0; i < restrictions_count; i++) {
         int flag;
         bson_iter_t doc_iter;
         bson_iter_t target_iter;
@@ -428,7 +428,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
                 // check if input doc contains this dot field
                 if (bson_iter_init(&doc_iter, input_doc) && bson_iter_find_descendant(&doc_iter, _field.c_str(), &target_iter)) {
                     int cmp_rst;
-                    bson_iter_init(&filter_iter, filters.at(i));
+                    bson_iter_init(&filter_iter, filters.at(filter_idx));
                     bson_iter_next(&filter_iter);
 //                std::cout << "target iter type: " << bson_iter_type(&target_iter) << ", filter iter type: " << bson_iter_type(&filter_iter) << std::endl;
                     cmp_rst = filter_compare_elements(&target_iter, &filter_iter);
@@ -446,7 +446,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
                     flag = IGNORE_NUM;
                 }
             } else {
-                flag = filter_compare_object(input_doc, filters.at(i));
+                flag = filter_compare_object(input_doc, filters.at(filter_idx));
             }
         }
 
