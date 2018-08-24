@@ -208,10 +208,10 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
     long selected_num;
     std::vector<std::string> selected_list;
     long valid_selected_num;
-
+    std::cout << "haha" << std::endl;
     if (!should_insert(input_doc))
         return nullptr;
-
+    std::cout << "haha2" << std::endl;
     selected_list = arg_map["selected"];
     selected_num = selected_list.size();
     valid_selected_num = selected_num;
@@ -562,7 +562,6 @@ void Filter::generate_filters() {
         //TODO: throw not found exceptions
         std::cout << "We do not have restrictions for this retrieve command!" << std::endl;
     }
-    std::cout << "haha" << std::endl;
 }
 
 
