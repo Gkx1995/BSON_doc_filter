@@ -384,16 +384,17 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
 
 bool Filter::should_insert(const bson_t* input_doc) {
 
-    long filters_size = filters.size();
+    long filters_count = filters.size();
+    long restrictions_count = arg_map["field"].size();
     bool should_insert;
 
     // no restrictions, all satisfied
-    if (filters_size == 0 && arg_map.size() == 0)
+    if (restrictions_count == 0)
         return true;
 
-    auto* filter_satisfied_arr = new bool[filters_size];
+    auto* restrictions_satisfied_arr = new bool[restrictions_count];
 
-    for (long i = 0; i < filters_size; i++) {
+    for (long i = 0; i < restrictions_count; i++) {
         int flag;
         bson_iter_t doc_iter;
         bson_iter_t target_iter;
@@ -449,11 +450,11 @@ bool Filter::should_insert(const bson_t* input_doc) {
             }
         }
 
-        filter_satisfied_arr[i] = filter_satisfied(flag, _operator);
-        std::cout << "restriction : " << i << ", flag: " << flag << ", satisfied : " << filter_satisfied_arr[i] << std::endl;
+        restrictions_satisfied_arr[i] = filter_satisfied(flag, _operator);
+        std::cout << "restriction : " << i << ", flag: " << flag << ", satisfied : " << restrictions_satisfied_arr[i] << std::endl;
     }
 
-    should_insert = filter_satisfied_arr[0];
+    should_insert = restrictions_satisfied_arr[0];
 
     long bool_relations_size = arg_map["boolType"].size();
 
@@ -462,22 +463,22 @@ bool Filter::should_insert(const bson_t* input_doc) {
         return should_insert;
     }
 
-    if (filters_size > 0 && bool_relations_size == filters_size - 1) {
+    if (restrictions_count > 0 && bool_relations_size == restrictions_count - 1) {
 
         for (long i = 0; i < bool_relations_size; i++) {
 
             if (arg_map["boolType"].at(i) == "and") {
-                should_insert = should_insert && filter_satisfied_arr[i + 1];
+                should_insert = should_insert && restrictions_satisfied_arr[i + 1];
             }
             else if (arg_map["boolType"].at(i) == "or") {
-                should_insert = should_insert || filter_satisfied_arr[i + 1];
+                should_insert = should_insert || restrictions_satisfied_arr[i + 1];
             }
         }
     } else {
         //TODO: throw exception
     }
 
-    delete[] filter_satisfied_arr;
+    delete[] restrictions_satisfied_arr;
 
     return should_insert;
 }
