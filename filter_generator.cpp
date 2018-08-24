@@ -548,8 +548,10 @@ void Filter::generate_filters() {
             long size = field_list.size();
             for (long i = 0; i < size; i++) {
                 if (_operator_list.at(i) != "*" && _operator_list.at(i) != "!") {
+                    std::cout << "haha1" << std::endl;
                     try {
                         filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
+                        std::cout << "haha2" << std::endl;
                     } catch (const char *msg) {
                         std::cerr << msg << std::endl;
                     }
@@ -561,7 +563,7 @@ void Filter::generate_filters() {
         }
     } else {
         //TODO: throw not found exceptions
-        std::cout << "We do not have filters for this retrieve command!" << std::endl;
+        std::cout << "We do not have restrictions for this retrieve command!" << std::endl;
     }
 }
 
