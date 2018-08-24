@@ -413,11 +413,9 @@ bool Filter::should_insert(const bson_t* input_doc) {
             bool exists;
 
             // check existence of field
-            std::cout << "haha1" << std::endl;
             exists = bson_iter_init(&doc_iter, input_doc)
                     && bson_iter_find_descendant(&doc_iter, _field.c_str(), &target_iter)
                     && bson_iter_type(&target_iter) == data_type_map[_datatype];
-            std::cout << "haha2" << std::endl;
 
             flag = exists ? 0 : IGNORE_NUM;
         }
@@ -564,6 +562,7 @@ void Filter::generate_filters() {
         //TODO: throw not found exceptions
         std::cout << "We do not have restrictions for this retrieve command!" << std::endl;
     }
+    std::cout << "haha" << std::endl;
 }
 
 
