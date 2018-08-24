@@ -538,16 +538,19 @@ void Filter::generate_filters() {
         std::vector<std::string> field_list = arg_map["field"];
         std::vector<std::string> term_list = arg_map["term"];
         std::vector<std::string> data_type_list = arg_map["dataType"];
+        std::vector<std::string> _operator_list = arg_map["relationType"];
 
-        if (field_list.size() == term_list.size() && data_type_list.size() == term_list.size()) {
+        if (field_list.size() == term_list.size()
+        && data_type_list.size() == term_list.size()) {
 
             long size = term_list.size();
             for (long i = 0; i < size; i++) {
-
-                try {
-                    filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
-                } catch (const char *msg) {
-                    std::cerr << msg << std::endl;
+                if (_operator_list.at(i) != "*" && _operator_list.at(i) != "!") {
+                    try {
+                        filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
+                    } catch (const char *msg) {
+                        std::cerr << msg << std::endl;
+                    }
                 }
             }
         } else {
