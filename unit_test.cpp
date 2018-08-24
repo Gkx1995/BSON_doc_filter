@@ -491,7 +491,7 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
         CHECK(should_insert(input_doc, q5) == false);
         std::string q6 = "select * where int32 foo.bar.1.baz_1 = 1";
         CHECK(should_insert(input_doc, q6) == true);
-        std::string q7 = "select * where int32 foo.bar *";
+        std::string q7 = "select * where array foo.bar *";
         CHECK(should_insert(input_doc, q7) == true);
     }
 

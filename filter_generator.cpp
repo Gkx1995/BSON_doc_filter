@@ -449,10 +449,8 @@ bool Filter::should_insert(const bson_t* input_doc) {
             }
         }
 
-        std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << ", flag: " << flag << std::endl;
-
         filter_satisfied_arr[i] = filter_satisfied(flag, _operator);
-        std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << " satisfied : " << filter_satisfied_arr[i] << std::endl;
+        std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << ", flag: " << flag << ", satisfied : " << filter_satisfied_arr[i] << std::endl;
     }
 
     should_insert = filter_satisfied_arr[0];
