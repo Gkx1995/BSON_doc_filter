@@ -394,7 +394,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
 
     auto* restrictions_satisfied_arr = new bool[restrictions_count];
 
-    for (long i = 0, filter_idx = 0; i < restrictions_count && filter_idx < filters_count; i++) {
+    for (long i = 0, filter_idx = 0; i < restrictions_count; i++) {
         int flag;
         bson_iter_t doc_iter;
         bson_iter_t target_iter;
@@ -402,9 +402,9 @@ bool Filter::should_insert(const bson_t* input_doc) {
         std::string _field;
         std::string _operator;
         std::string _datatype;
-        std::cout << "haha" << std::endl;
+
         std::cout << "Input doc: " << bson_as_json(input_doc, NULL) << std::endl;
-        std::cout << "haha1" << std::endl;
+
 
         _field = arg_map["field"].at(i);
         _operator = arg_map["relationType"].at(i);
@@ -423,8 +423,8 @@ bool Filter::should_insert(const bson_t* input_doc) {
         }
 
         // handle normal operators
-        else {
-            // check if the filter is a not-notation key or not
+        else if (filter_idx < filters_count) {
+            // check if the filter is a dot-notation key or not
             if (_field.find('.') != std::string::npos) {
 
                 // check if input doc contains this dot field
