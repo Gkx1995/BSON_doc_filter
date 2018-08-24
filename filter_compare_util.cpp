@@ -111,8 +111,8 @@ int filter_compare_elements(bson_iter_t *l, bson_iter_t *r)
     int c;
     bool l_valid, r_valid;
 
-    cout << "LIT:" << bson_iter_type(l) << endl;
-    cout << "RIT:" << bson_iter_type(r) << endl;
+    cout << "input doc type: " << bson_iter_type(l) << endl;
+    cout << "filter type: " << bson_iter_type(r) << endl;
 
     if (element_is_special_type(bson_iter_type(l)) || element_is_special_type(bson_iter_type(r))) {
 
