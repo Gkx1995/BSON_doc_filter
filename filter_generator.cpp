@@ -387,8 +387,8 @@ bool Filter::should_insert(const bson_t* input_doc) {
     long filters_size = filters.size();
     bool should_insert;
 
-    // no filters, all satisfied
-    if (filters_size == 0)
+    // no restrictions, all satisfied
+    if (filters_size == 0 && arg_map.size() == 0)
         return true;
 
     auto* filter_satisfied_arr = new bool[filters_size];
@@ -450,7 +450,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
         }
 
         filter_satisfied_arr[i] = filter_satisfied(flag, _operator);
-        std::cout << "filter: " << bson_as_json(filters.at(i), NULL) << ", flag: " << flag << ", satisfied : " << filter_satisfied_arr[i] << std::endl;
+        std::cout << "restriction : " << i << ", flag: " << flag << ", satisfied : " << filter_satisfied_arr[i] << std::endl;
     }
 
     should_insert = filter_satisfied_arr[0];
