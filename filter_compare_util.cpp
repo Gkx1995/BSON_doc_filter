@@ -460,8 +460,6 @@ int filter_compare_object(const bson_t *l, bson_t *r)
     bson_iter_init(&r_iter, r);
 
     return filter_compare_iterators(&l_iter, &r_iter);
-
-
 }
 
 
