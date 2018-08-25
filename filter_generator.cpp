@@ -259,6 +259,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
 
                 // this token contains only digit and is supposed to be appended as array
                 if (tokens.at(j).find_first_not_of("0123456789") == std::string::npos && j > 0) {
+                    element_doc = append_document(element_doc, tokens.at(j));
                     element_doc = append_array(element_doc, tokens.at(--j));
                 }
                 else

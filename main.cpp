@@ -3,7 +3,7 @@
 int main() {
 
     //query sth matched with input doc
-    std::string query = "select foo.bar.0.baz_0";
+    std::string query = "select foo.bar.1.baz_1";
 
     // select all, should return 1
 //    std::string query = "where *";
