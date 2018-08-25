@@ -224,8 +224,8 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
     for (long i = 0; i < selected_num; ++i) {
         std::istringstream iss(selected_list.at(i));
         std::vector<std::string> tokens;
-        std::string token;
-        bson_iter_t iter;
+        std::string token, last_token;
+        bson_iter_t iter, last_token_iter;
         bson_t* element_doc;
         bool valid_field;
 
@@ -236,20 +236,28 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
         }
 
         bson_iter_init(&iter, input_doc);
-        for (int j = 0; j < tokens.size(); j++) {
+        last_token = tokens.at(tokens.size() - 1);
 
-            // input_doc does not contain this field, ignore this selected field
-            if (j < tokens.size() - 1 && !(bson_iter_find(&iter, tokens.at(j).c_str()) && bson_iter_recurse(&iter, &iter))) {
-                std::cout << "field did not find: " << tokens.at(j) << ". Will ignore this selected field for projection." << std::endl;
-                valid_field = false;
-                break;
-            } else if (j == tokens.size() - 1 && !bson_iter_find(&iter, tokens.at(j).c_str())) {
-                std::cout << "field did not find: " << tokens.at(j) << ". Will ignore this selected field for projection." << std::endl;
-                valid_field = false;
-                break;
-            }
-
+        // input_doc does not contain this field, ignore this selected field
+        if (!bson_iter_find_descendant(&iter, last_token.c_str(), &last_token_iter)) {
+            std::cout << "field did not find: " << selected_list.at(i) << ". Will ignore this selected field for projection." << std::endl;
+            valid_field = false;
         }
+
+//        for (int j = 0; j < tokens.size(); j++) {
+//
+//            // input_doc does not contain this field, ignore this selected field
+//            if (j < tokens.size() - 1 && !(bson_iter_find(&iter, tokens.at(j).c_str()) && bson_iter_recurse(&iter, &iter))) {
+//                std::cout << "field did not find: " << tokens.at(j) << ". Will ignore this selected field for projection." << std::endl;
+//                valid_field = false;
+//                break;
+//            } else if (j == tokens.size() - 1 && !bson_iter_find(&iter, tokens.at(j).c_str())) {
+//                std::cout << "field did not find: " << tokens.at(j) << ". Will ignore this selected field for projection." << std::endl;
+//                valid_field = false;
+//                break;
+//            }
+//
+//        }
 
         // ignore this selected field and loop next one, decrease valid num
         if (!valid_field) {
@@ -258,12 +266,18 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
         }
 
         if (tokens.size() == 1) {
-            generate_basic_element_doc(returned_doc, &iter);
+            generate_basic_element_doc(returned_doc, &last_token_iter);
         } else {
             element_doc = bson_new();
-            generate_basic_element_doc(element_doc, &iter);
+            generate_basic_element_doc(element_doc, &last_token_iter);
             for (long j = tokens.size() - 2; j > 0; j--) {
-                element_doc = append_document(element_doc, tokens.at(j));
+
+                // this token contains only digit and is supposed to be appended as array
+                if (tokens.at(j).find_first_not_of("0123456789") == std::string::npos && j > 0) {
+                    element_doc = append_array(element_doc, tokens.at(--j));
+                }
+                else
+                    element_doc = append_document(element_doc, tokens.at(j));
             }
             BSON_APPEND_DOCUMENT(returned_doc, tokens.at(0).c_str(), element_doc);
         }
@@ -274,14 +288,14 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
     return nullptr;
 }
 
-void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
+void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_iter) {
     const char* key;
     bson_type_t type;
     const bson_value_t* value;
 
-    key = bson_iter_key(iter);
-    type = bson_iter_type(iter);
-    value = bson_iter_value(iter);
+    key = bson_iter_key(last_token_iter);
+    type = bson_iter_type(last_token_iter);
+    value = bson_iter_value(last_token_iter);
 
     switch (type) {
         case BSON_TYPE_EOD:
@@ -298,14 +312,14 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
         case BSON_TYPE_ARRAY: {
             uint32_t array_len = 0;
             const uint8_t* array = NULL;
-            bson_iter_array(iter, &array_len, &array);
+            bson_iter_array(last_token_iter, &array_len, &array);
             BSON_APPEND_ARRAY(b, key, bson_new_from_data(array, array_len));
             break;
         }
         case BSON_TYPE_DOCUMENT: {
             uint32_t doc_len = 0;
             const uint8_t * doc = NULL;
-            bson_iter_document(iter, &doc_len, &doc);
+            bson_iter_document(last_token_iter, &doc_len, &doc);
             BSON_APPEND_DOCUMENT(b, key, bson_new_from_data(doc, doc_len));
             break;
         }
@@ -367,7 +381,7 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* iter) {
 
         case BSON_TYPE_DECIMAL128: {
             bson_decimal128_t* dec = NULL;
-            bson_iter_decimal128(iter, dec);
+            bson_iter_decimal128(last_token_iter, dec);
             BSON_APPEND_DECIMAL128(b, key, dec);
             break;
 
@@ -590,6 +604,14 @@ bson_t* Filter::append_document(bson_t* bson_doc, std::string& field) {
     return_doc = bson_new();
     BSON_APPEND_DOCUMENT(return_doc, field.c_str(), bson_doc);
     std::cout << "nested doc appended: " << bson_as_json(return_doc, NULL) << std::endl;
+    return return_doc;
+}
+
+bson_t* Filter::append_array(bson_t* bson_doc, std::string& field) {
+    bson_t* return_doc;
+    return_doc = bson_new();
+    BSON_APPEND_ARRAY(return_doc, field.c_str(), bson_doc);
+    std::cout << "nested array appended: " << bson_as_json(return_doc, NULL) << std::endl;
     return return_doc;
 }
 

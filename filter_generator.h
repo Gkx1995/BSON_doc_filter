@@ -42,6 +42,7 @@ private:
     void generate_data_type_map();
     bson_t* generate_unnested_filter(std::string& field, std::string& term, std::string& dataType);
     bson_t* append_document(bson_t* bson_doc, std::string& field);
+    bson_t* append_array(bson_t* bson_doc, std::string& field);
     void generate_basic_element_doc(bson_t* returned_doc, bson_iter_t* iter);
 
 protected:

@@ -152,12 +152,40 @@ TEST_CASE("Test projections: select wrong_doc.a.b.c", "[get_input_doc_if_satisfi
     }
 }
 
-TEST_CASE("Test projections: select document.a.b.c, int32", "[get_input_doc_if_satisfied_filter]") {
+TEST_CASE("Test projections: select document.a.b.c,foo.bar.0.baz_0, int32", "[get_input_doc_if_satisfied_filter]") {
     bson_t *input_doc = generate_fixed_input_doc();
 
     std::string q1 = "select document.a.b.c";
     const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
     bson_t* valid_doc_1 = bson_new();
+    bson_t* a = bson_new();
+    bson_t* b = bson_new();
+    bson_t* c = bson_new();
+    BSON_APPEND_INT32(c, "c", 1);
+    BSON_APPEND_DOCUMENT(b, "b", c);
+    BSON_APPEND_DOCUMENT(a, "a", b);
+    BSON_APPEND_DOCUMENT(valid_doc_1, "document", a);
+
+    BSON_APPEND_INT32(valid_doc_1, "int32", 200);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test dot donation style projections: select foo.bar.baz_0,document.a.b.c, int32", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select document.a.b.c";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "]", "}");
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
@@ -478,7 +506,7 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
         CHECK(should_insert(input_doc, q3) == true);
     }
 
-    SECTION("Test nested query") {
+    SECTION("Test dot notation query") {
         std::string q1 = "select * where int32 document.a.b.c = 1";
         CHECK(should_insert(input_doc, q1) == true);
         std::string q2 = "select * where int32 document.a.b.c > 0";
