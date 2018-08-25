@@ -529,7 +529,7 @@ TEST_CASE( "input_doc have 11 data types", "[should_insert]" ) {
 TEST_CASE("Test projections: select document.a.b.c,foo.bar.0.baz_0,int32", "[get_input_doc_if_satisfied_filter]") {
     bson_t *input_doc = generate_fixed_input_doc();
 
-    std::string q1 = "select document.a.b.c";
+    std::string q1 = "select document.a.b.c,foo.bar.0.baz_0,int32";
     const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
     bson_t* valid_doc_1 = bson_new();
     bson_t* a = bson_new();
