@@ -240,6 +240,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
 
         // input_doc does not contain this field, ignore this selected field
         if (!bson_iter_find_descendant(&iter, last_token.c_str(), &last_token_iter)) {
+            std::cout << "last token = " << last_token << std::endl;
             std::cout << "field did not find: " << selected_list.at(i) << ". Will ignore this selected field for projection." << std::endl;
             valid_field = false;
         }
