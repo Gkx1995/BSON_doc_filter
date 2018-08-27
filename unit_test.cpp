@@ -367,7 +367,7 @@ TEST_CASE("Test projections: select int32", "[get_input_doc_if_satisfied_filter]
     bson_t* valid_doc_1 = bson_new();
 
     bson_oid_t oid = get_fixed_oid();
-    BSON_APPEND_OID(input_doc, "_id", &oid);
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
     BSON_APPEND_INT32(valid_doc_1, "int32", 200);
 
     CHECK(is_identical(output_doc_1, valid_doc_1) == true);
@@ -392,7 +392,7 @@ TEST_CASE("Test projections: select document.a.b.c", "[get_input_doc_if_satisfie
     bson_t* b = bson_new();
     bson_t* c = bson_new();
     bson_oid_t oid = get_fixed_oid();
-    BSON_APPEND_OID(input_doc, "_id", &oid);
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
@@ -438,7 +438,7 @@ TEST_CASE("Test projections: select document.a.b.c,foo.bar.0.baz_0,int32", "[get
     bson_t* b = bson_new();
     bson_t* c = bson_new();
     bson_oid_t oid = get_fixed_oid();
-    BSON_APPEND_OID(input_doc, "_id", &oid);
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
@@ -471,7 +471,7 @@ TEST_CASE("Test dot donation style projections: select foo.bar.baz_0,document.a.
     bson_t* b = bson_new();
     bson_t* c = bson_new();
     bson_oid_t oid = get_fixed_oid();
-    BSON_APPEND_OID(input_doc, "_id", &oid);
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
@@ -500,7 +500,7 @@ TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey *",
     bson_t* b = bson_new();
     bson_t* c = bson_new();
     bson_oid_t oid = get_fixed_oid();
-    BSON_APPEND_OID(input_doc, "_id", &oid);
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
