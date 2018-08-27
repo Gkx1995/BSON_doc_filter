@@ -292,7 +292,7 @@ bool Filter::find_and_append_oid(bson_t* returned_doc, const bson_t* input_doc) 
             if (type == BSON_TYPE_OID) {
                 key = bson_iter_key(&iter);
                 value = bson_iter_value(&iter);
-                std::cout << "OId found: " <<
+                std::cout << "OId found for this input doc" << std::endl;
                 BSON_APPEND_OID(returned_doc, key, &value->value.v_oid);
                 return true;
             }
@@ -686,9 +686,8 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
         BSON_APPEND_UNDEFINED(b, field.c_str());
     }
     else if (_data_type == BSON_TYPE_OID) {
-         // TODO: need to specifically define this case
-            oid_oid = nullptr;
-            BSON_APPEND_OID(b, field.c_str(), oid_oid);
+        bson_oid_init_from_string(oid_oid, term.c_str());
+        BSON_APPEND_OID(b, field.c_str(), oid_oid);
     }
     else if (_data_type == BSON_TYPE_BOOL) {
         // "0"for false, and "1" or "true"
@@ -701,7 +700,6 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
         BSON_APPEND_DATE_TIME(b, field.c_str(), datetime_val);
     }
     else if (_data_type == BSON_TYPE_NULL) {
-        //TODO: there is no term in this case, need to handle this
         BSON_APPEND_NULL(b, field.c_str());
     }
     else if (_data_type == BSON_TYPE_REGEX) {
