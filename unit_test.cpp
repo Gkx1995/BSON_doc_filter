@@ -9,11 +9,14 @@
 bson_t* generate_fixed_input_doc() {
     bson_decimal128_t decimal128;
     bson_t* input_doc;
+    bson_oid_t oid;
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
 
+    bson_oid_init(&oid, NULL);
     input_doc = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "{", "baz_1", BCON_INT32 (1), "}", "]", "}");
+    BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_BOOL(input_doc, "bool", true);
     BSON_APPEND_UTF8(input_doc, "utf8", "99");
     BSON_APPEND_DOUBLE(input_doc, "double", 10.50);

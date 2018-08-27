@@ -286,11 +286,13 @@ bool Filter::find_and_append_oid(bson_t* returned_doc, const bson_t* input_doc) 
     const bson_value_t* value;
 
     if (bson_iter_init(&iter, input_doc)) {
+
         while (bson_iter_next(&iter)) {
             type = bson_iter_type(&iter);
             if (type == BSON_TYPE_OID) {
                 key = bson_iter_key(&iter);
                 value = bson_iter_value(&iter);
+                std::cout << "OId found: " <<
                 BSON_APPEND_OID(returned_doc, key, &value->value.v_oid);
                 return true;
             }
