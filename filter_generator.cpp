@@ -644,7 +644,7 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
     bson_subtype_t binary_subtype;
     const uint8_t *binary;
     uint32_t binary_length;
-    bson_oid_t *oid_oid;
+    bson_oid_t oid_oid;
     bool bool_flag;
     int64_t datetime_val;
     const char *reg_options, *regex;
@@ -686,8 +686,8 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
         BSON_APPEND_UNDEFINED(b, field.c_str());
     }
     else if (_data_type == BSON_TYPE_OID) {
-        bson_oid_init_from_string(oid_oid, term.c_str());
-        BSON_APPEND_OID(b, field.c_str(), oid_oid);
+        bson_oid_init_from_string(&oid_oid, term.c_str());
+        BSON_APPEND_OID(b, field.c_str(), &oid_oid);
     }
     else if (_data_type == BSON_TYPE_BOOL) {
         // "0"for false, and "1" or "true"
