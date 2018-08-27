@@ -44,6 +44,7 @@ private:
     bson_t* append_document(bson_t* bson_doc, std::string& field);
     bson_t* append_array(bson_t* bson_doc, std::string& field);
     void generate_basic_element_doc(bson_t* returned_doc, bson_iter_t* iter);
+    bool find_and_append_oid(bson_t* returned_doc, const bson_t* input_doc);
 
 protected:
     std::map<std::string, std::vector<std::string>> arg_map;

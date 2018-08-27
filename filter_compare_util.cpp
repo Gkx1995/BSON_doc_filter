@@ -356,9 +356,9 @@ int filter_compare_elements(bson_iter_t *l, bson_iter_t *r)
             r_valid = bson_iter_recurse(r, &r_child);
 
             if (!l_valid)
-                return r_valid ? -1 : 0;
+                return IGNORE_NUM;
             if (!r_valid)
-                return 1;
+                return IGNORE_NUM;
 
             return filter_compare_iterators(&l_child, &r_child);
 
@@ -371,9 +371,9 @@ int filter_compare_elements(bson_iter_t *l, bson_iter_t *r)
             r_valid = bson_iter_recurse(r, &r_child);
 
             if (!l_valid)
-                return r_valid ? -1 : 0;
+                return IGNORE_NUM;
             if (!r_valid)
-                return 1;
+                return IGNORE_NUM;
 
             return filter_compare_iterators(&l_child, &r_child);
 
@@ -411,9 +411,9 @@ int filter_compare_elements(bson_iter_t *l, bson_iter_t *r)
                 r_valid = bson_iter_init(&r_child, &r_bson);
 
             if (!l_valid)
-                return r_valid ? -1 : 0;
+                return IGNORE_NUM;
             if (!r_valid)
-                return 1;
+                return IGNORE_NUM;
 
             return filter_compare_iterators(&l_child, &r_child);
     }
