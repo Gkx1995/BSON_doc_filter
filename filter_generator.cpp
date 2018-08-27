@@ -807,11 +807,15 @@ void Filter::print_filters() {
 
 bson_t* Filter::generate_input_doc() {
     bson_decimal128_t decimal128;
-    bson_t * input_doc = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "{", "baz_1", BCON_INT32 (1), "}", "]", "}");
+    bson_t* input_doc;
+    bson_oid_t oid;
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
 
+    bson_oid_init(&oid, NULL);
+    input_doc = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "{", "baz_1", BCON_INT32 (1), "}", "]", "}");
+    BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_BOOL(input_doc, "bool", true);
     BSON_APPEND_UTF8(input_doc, "utf8", "99");
     BSON_APPEND_DOUBLE(input_doc, "double", 10.50);
@@ -827,6 +831,7 @@ bson_t* Filter::generate_input_doc() {
 
     BSON_APPEND_UTF8(input_doc, "utf 8", "utf 8");
 
+    // generate nested element {document:{a: {b: {c: 1}}}}
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
@@ -836,7 +841,6 @@ bson_t* Filter::generate_input_doc() {
 
     bson_decimal128_from_string("500", &decimal128);
     BSON_APPEND_DECIMAL128(input_doc, "decimal128", &decimal128);
-//    std::cout << "input_doc is: " << bson_as_json(input_doc, NULL) << std::endl;
 
     return input_doc;
 
