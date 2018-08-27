@@ -5,9 +5,9 @@
 #define CATCH_CONFIG_MAIN
 #include "filter_generator.h"
 #include "catch2/catch.hpp"
-bson_oid_t* get_fixed_oid() {
-    bson_oid_t* oid = NULL;
-    bson_oid_init_from_string(oid, "5b843debf88cf51106bfdade");
+bson_oid_t get_fixed_oid() {
+    bson_oid_t oid;
+    bson_oid_init_from_string(&oid, "5b843debf88cf51106bfdade");
     return oid;
 }
 
@@ -17,9 +17,10 @@ bson_t* generate_fixed_input_doc() {
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
+    bson_oid_t oid = get_fixed_oid();
 
-    BSON_APPEND_OID(input_doc, "_id", get_fixed_oid());
     input_doc = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "{", "baz_1", BCON_INT32 (1), "}", "]", "}");
+    BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_BOOL(input_doc, "bool", true);
     BSON_APPEND_UTF8(input_doc, "utf8", "99");
     BSON_APPEND_DOUBLE(input_doc, "double", 10.50);
@@ -365,7 +366,8 @@ TEST_CASE("Test projections: select int32", "[get_input_doc_if_satisfied_filter]
     const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
     bson_t* valid_doc_1 = bson_new();
 
-    BSON_APPEND_OID(input_doc, "_id", get_fixed_oid());
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_INT32(valid_doc_1, "int32", 200);
 
     CHECK(is_identical(output_doc_1, valid_doc_1) == true);
@@ -389,7 +391,8 @@ TEST_CASE("Test projections: select document.a.b.c", "[get_input_doc_if_satisfie
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
-    BSON_APPEND_OID(input_doc, "_id", get_fixed_oid());
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
@@ -434,7 +437,8 @@ TEST_CASE("Test projections: select document.a.b.c,foo.bar.0.baz_0,int32", "[get
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
-    BSON_APPEND_OID(input_doc, "_id", get_fixed_oid());
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
@@ -466,7 +470,8 @@ TEST_CASE("Test dot donation style projections: select foo.bar.baz_0,document.a.
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
-    BSON_APPEND_OID(input_doc, "_id", get_fixed_oid());
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
@@ -494,7 +499,8 @@ TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey *",
     bson_t* a = bson_new();
     bson_t* b = bson_new();
     bson_t* c = bson_new();
-    BSON_APPEND_OID(input_doc, "_id", get_fixed_oid());
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_INT32(c, "c", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
