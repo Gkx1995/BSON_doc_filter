@@ -62,8 +62,8 @@ const bson_t* get_input_doc_if_satisfied_filter(bson_t* input_doc, std::string &
     return filter->get_input_doc_if_satisfied_filter(input_doc);
 }
 
-bool is_identical(const bson_t* l, const bson_t* r) {
-    return bson_compare(l, r) == 0;
+bool is_identical(const bson_t* l, bson_t* r) {
+    return filter_compare_object(l, r) == 0;
 }
 
 TEST_CASE("Test 6 numeric operators", "[should_insert]") {
@@ -346,7 +346,7 @@ TEST_CASE("Test projections: select *", "[get_input_doc_if_satisfied_filter]") {
 
     std::string q1 = "select *";
     const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
-    const bson_t* valid_doc_1 = generate_fixed_input_doc();
+    bson_t* valid_doc_1 = generate_fixed_input_doc();
     CHECK(is_identical(output_doc_1, valid_doc_1) == true);
 
     if (input_doc == output_doc_1)
@@ -446,7 +446,7 @@ TEST_CASE("Test projections: select document.a.b.c,foo.bar.0.baz_0,int32", "[get
 
     BSON_APPEND_INT32(valid_doc_1, "int32", 200);
 
-    CHECK(is_identical(valid_doc_1, output_doc_1) == true);
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
 
     std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
     std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
