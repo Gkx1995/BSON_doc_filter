@@ -508,6 +508,30 @@ TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey !",
     }
 }
 
+TEST_CASE("Test oid") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select * where oid _id = 5b843debf88cf51106bfdade";
+    CHECK(should_insert(input_doc, q1) == true);
+
+    std::string q2 = "select * where oid _id >= 5b843debf88cf51106bfdade";
+    CHECK(should_insert(input_doc, q2) == true);
+
+    std::string q3 = "select * where oid _id >= 5b843debf88cf51106bfdade";
+    CHECK(should_insert(input_doc, q3) == true);
+
+    std::string q5 = "select * where oid _id != 5b843debf88cf51106bfdade";
+    CHECK(should_insert(input_doc, q5) == false);
+
+    std::string q6 = "select * where oid _id *";
+    CHECK(should_insert(input_doc, q6) == true);
+
+    std::string q7 = "select * where oid _id !";
+    CHECK(should_insert(input_doc, q7) == false);
+
+    delete(input_doc);
+}
+
 
 
 
