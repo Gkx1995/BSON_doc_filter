@@ -471,10 +471,10 @@ bool Filter::should_insert(const bson_t* input_doc) {
 
         for (long i = 0; i < bool_relations_size; i++) {
 
-            if (arg_map["boolType"].at(i) == "and") {
+            if (arg_map["boolType"].at(i) == "and" || arg_map["boolType"].at(i) == "AND") {
                 should_insert = should_insert && restrictions_satisfied_arr[i + 1];
             }
-            else if (arg_map["boolType"].at(i) == "or") {
+            else if (arg_map["boolType"].at(i) == "or" || arg_map["boolType"].at(i) == "OR") {
                 should_insert = should_insert || restrictions_satisfied_arr[i + 1];
             }
         }
@@ -657,7 +657,7 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
         BSON_APPEND_BINARY(b, field.c_str(), binary_subtype, binary, binary_length);
     }
     else if (_data_type == BSON_TYPE_UNDEFINED) {
-        throw "Error: Filter not generated, data type should not be BSON_TYPE_UNDEFINED!";
+        BSON_APPEND_UNDEFINED(b, field.c_str());
     }
     else if (_data_type == BSON_TYPE_OID) {
          // TODO: need to specifically define this case

@@ -56,18 +56,7 @@ const bson_t* get_input_doc_if_satisfied_filter(bson_t* input_doc, std::string &
 }
 
 bool is_identical(const bson_t* l, const bson_t* r) {
-    uint32_t l_len = 0;
-    uint32_t r_len = 0;
-    const uint8_t * l_doc = NULL;
-    const uint8_t * r_doc = NULL;
-    bson_iter_t l_iter, r_iter;
-
-    bson_iter_init(&l_iter, l);
-    bson_iter_init(&r_iter, r);
-    bson_iter_document(&l_iter, &l_len, &l_doc);
-    bson_iter_document(&r_iter, &r_len, &r_doc);
-
-    return l_len == r_len && memcmp(l_doc, r_doc, l_len) == 0;
+    return bson_compare(l, r) == 0;
 }
 
 TEST_CASE("Test projections: select *", "[get_input_doc_if_satisfied_filter]") {
