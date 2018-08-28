@@ -651,29 +651,35 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
         }
     }
 
-    // deal with non-braced expression
-    while (!bool_expr_stack.empty()) {
-
-        // there must exist one or more [restriction, bool_operator] combinations
-        bool_operator = bool_expr_stack.top();
+    if (!bool_expr_stack.empty()) {
+        // deal with non-braced expression
+        braced_value = bool_expr_stack.top() == "true";
         std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
         bool_expr_stack.pop();
 
-        restriction = bool_expr_stack.top();
-        std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
-        bool_expr_stack.pop();
+        while (!bool_expr_stack.empty()) {
 
-        if (restriction.find_first_not_of("0123456789") == std::string::npos) {
-            restriction_value = restrictions_satisfied_arr[stoi(restriction)];
-        } else {
-            restriction_value = restriction == "true";
+            // there must exist one or more [restriction, bool_operator] combinations
+            bool_operator = bool_expr_stack.top();
+            std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+            bool_expr_stack.pop();
+
+            restriction = bool_expr_stack.top();
+            std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+            bool_expr_stack.pop();
+
+            if (restriction.find_first_not_of("0123456789") == std::string::npos) {
+                restriction_value = restrictions_satisfied_arr[stoi(restriction)];
+            } else {
+                restriction_value = restriction == "true";
+            }
+
+            if (bool_operator == "|")
+                braced_value = braced_value || restriction_value;
+            else
+                // else bool_operator is "&"
+                braced_value = braced_value && restriction_value;
         }
-
-        if (bool_operator == "|")
-            braced_value = braced_value || restriction_value;
-        else
-            // else bool_operator is "&"
-            braced_value = braced_value && restriction_value;
     }
 
     satisfy_query = braced_value;
