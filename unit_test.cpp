@@ -479,6 +479,8 @@ TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey *",
     BSON_APPEND_INT32(valid_doc_1, "int32", 200);
 
     CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
 
     if (input_doc == output_doc_1)
         delete (input_doc);
@@ -500,6 +502,8 @@ TEST_CASE("Test projections: select _id", "[get_input_doc_if_satisfied_filter]")
     BSON_APPEND_OID(valid_doc_1, "_id", &oid);
 
     CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
 
     if (input_doc == output_doc_1)
         delete (input_doc);
