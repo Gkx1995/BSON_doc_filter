@@ -595,9 +595,7 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
 
         }
             // we never push ")" into stack, only take it to backtrack latest "(" in stack
-        if (curt_symbol == ")" ||
-                // all braces has been consumed but we still have non-braced expression
-                (i == bool_expr_list.size() - 1 && !bool_expr_stack.empty())) {
+        else {
 
             // current top element must be a restriction
             // top element has not been modified and is still index of restrictions_satisfied_arr
@@ -650,16 +648,37 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
                 std::cout << "stack pushed: " << bool_expr_stack.top() << std::endl;
             }
 
-            // this must be reached eventually
-            std::cout << "i: " << i << "size: " << bool_expr_list.size() << std::endl;
-            if ((bool_expr_stack.empty() || bool_expr_stack.size() == 1) && i == bool_expr_list.size() - 1) {
-                satisfy_query = braced_value;
-                std::cout << "input doc satisfy query: " << satisfy_query << std::endl;
-            }
-
         }
     }
 
+    // deal with non-braced expression
+    while (!bool_expr_stack.empty()) {
+
+        // there must exist one or more [restriction, bool_operator] combinations
+        bool_operator = bool_expr_stack.top();
+        std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+        bool_expr_stack.pop();
+
+        restriction = bool_expr_stack.top();
+        std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+        bool_expr_stack.pop();
+
+        if (restriction.find_first_not_of("0123456789") == std::string::npos) {
+            restriction_value = restrictions_satisfied_arr[stoi(restriction)];
+        } else {
+            restriction_value = restriction == "true";
+        }
+
+        if (bool_operator == "|")
+            braced_value = braced_value || restriction_value;
+        else
+            // else bool_operator is "&"
+            braced_value = braced_value && restriction_value;
+    }
+
+    satisfy_query = braced_value;
+
+    std::cout << "input doc satisfy query: " << satisfy_query << std::endl;
     return satisfy_query;
 }
 
