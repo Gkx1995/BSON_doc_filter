@@ -651,7 +651,7 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
             }
 
             // this must be reached eventually
-            if (bool_expr_stack.empty()) {
+            if (bool_expr_stack.empty() || bool_expr_stack.size() == 1) {
                 satisfy_query = braced_value;
                 std::cout << "input doc satisfy query: " << satisfy_query << std::endl;
             }
