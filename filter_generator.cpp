@@ -346,11 +346,12 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_iter)
             BSON_APPEND_UNDEFINED(b, key);
 
         case BSON_TYPE_OID:
+            // we have already inserted _id by default
+            if (strncmp(key, "_id", 5) == 0)
+                return;
+
             BSON_APPEND_OID(b, key, &value->value.v_oid);
             break;
-
-            // we have already inserted OID by default
-//            return;
 
         case BSON_TYPE_BOOL:
             BSON_APPEND_BOOL(b, key, value->value.v_bool);
