@@ -557,6 +557,24 @@ TEST_CASE("Test oid") {
     delete(input_doc);
 }
 
+TEST_CASE("Test braced query") {
+    bson_t *input_doc = generate_fixed_input_doc();
 
+    std::string q1 = "select * where (oid _id = 5b843debf88cf51106bfdade)";
+    CHECK(should_insert(input_doc, q1) == true);
 
+    std::string q2 = "select * where ((int32 int32 *) or (double double = 10.50)) and int64 int64 >= 300";
+    CHECK(should_insert(input_doc, q2) == true);
+
+    std::string q3 = "select * where (((int32 int32 *) or (double double = 10.50)) and int64 int64 >= 300)";
+    CHECK(should_insert(input_doc, q3) == true);
+
+    std::string q5 = "select * where (((int32 int32 !) or (double double = 10.50)) and int64 int64 !)";
+    CHECK(should_insert(input_doc, q5) == false);
+
+    std::string q6 = "select * where (((int32 int32 *) or (double double = 10.50)) and int64 int64 >= 300) and ((bool bool *))";
+    CHECK(should_insert(input_doc, q6) == true);
+
+    delete(input_doc);
+}
 
