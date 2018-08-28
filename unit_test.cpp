@@ -490,6 +490,27 @@ TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey *",
         delete (valid_doc_1);
 }
 
+TEST_CASE("Test projections: select _id", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select _id";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
 TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey !", "[get_input_doc_if_satisfied_filter]") {
     bson_t *input_doc = generate_fixed_input_doc();
 
