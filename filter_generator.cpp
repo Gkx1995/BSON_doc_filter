@@ -14,6 +14,7 @@ namespace tao {
         namespace test {
 
             const std::string PLACE_HOLDER = "0";
+            int restriction_count = 0;
             //////////////////////////////////////////////////////////
             // PEGTL rules
             //////////////////////////////////////////////////////////
@@ -80,9 +81,12 @@ namespace tao {
             struct single_quoted_term: seq<one<'\''>, nested_term,  one<'\''>> {};
             struct term: sor<single_quoted_term, not_quoted_term>{};
             struct select_field: plus<not_one<' ', ','>> {};
+            struct left_brace: string<'('> {};
+            struct right_brace: string<')'> {};
             struct restriction: seq<dataType, blank, field, blank, sor< seq<relationType, blank, term>, exist_or_not>> {};
+            struct braced_restriction: seq<star<left_brace>, restriction, star<right_brace>> {};
             struct select_clause: seq<_select, blank, select_field, star<seq<one<','>, select_field>>>{};
-            struct where_clause: seq<_where, blank, sor<_all, seq<restriction, star<blank, boolType, blank, restriction>>>> {};
+            struct where_clause: seq<_where, blank, sor<_all, seq<braced_restriction, star<blank, boolType, blank, braced_restriction>>>> {};
             struct grammar: must<select_clause, opt<blank, where_clause>, eof>{};
 
 
@@ -174,6 +178,52 @@ namespace tao {
                     arg_map["dataType"].push_back(in.string());
 
                     std::cout << "dataType matched: " << in.string() << std::endl;
+                }
+            };
+
+            template<> struct action< left_brace > {
+                template <typename Input>
+                static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
+                    arg_map["boolExpression"].push_back(in.string());
+
+                    std::cout << "boolExpression appended: " << in.string() << std::endl;
+                }
+            };
+
+            template<> struct action< right_brace > {
+                template <typename Input>
+                static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
+                    arg_map["boolExpression"].push_back(in.string());
+
+                    std::cout << "boolExpression appended: " << in.string() << std::endl;
+                }
+            };
+
+            template<> struct action< restriction > {
+                template <typename Input>
+                static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
+                    arg_map["boolExpression"].push_back(std::to_string(restriction_count));
+
+                    std::cout << "boolExpression appended: restriction index is " << restriction_count << std::endl;
+                    restriction_count++;
+                }
+            };
+
+            template<> struct action< _and > {
+                template <typename Input>
+                static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
+                    arg_map["boolExpression"].push_back("&");
+
+                    std::cout << "boolExpression appended: and" << std::endl;
+                }
+            };
+
+            template<> struct action< _or > {
+                template <typename Input>
+                static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
+                    arg_map["boolExpression"].push_back("|");
+
+                    std::cout << "boolExpression appended: or" << std::endl;
                 }
             };
 
@@ -420,12 +470,11 @@ bool Filter::should_insert(const bson_t* input_doc) {
     long filters_count = filters.size();
     long restrictions_count = arg_map["field"].size();
     bool should_insert;
+    auto* restrictions_satisfied_arr = new bool[restrictions_count];
 
     // no restrictions, all satisfied
     if (restrictions_count == 0)
         return true;
-
-    auto* restrictions_satisfied_arr = new bool[restrictions_count];
 
     for (long i = 0, filter_idx = 0; i < restrictions_count; i++) {
         int flag;
@@ -499,17 +548,19 @@ bool Filter::should_insert(const bson_t* input_doc) {
         return should_insert;
     }
 
-    if (restrictions_count > 0 && bool_relations_size == restrictions_count - 1) {
+    else if (restrictions_count > 0 && bool_relations_size == restrictions_count - 1) {
 
-        for (long i = 0; i < bool_relations_size; i++) {
+//        for (long i = 0; i < bool_relations_size; i++) {
+//
+//            if (arg_map["boolType"].at(i) == "and" || arg_map["boolType"].at(i) == "AND") {
+//                should_insert = should_insert && restrictions_satisfied_arr[i + 1];
+//            }
+//            else if (arg_map["boolType"].at(i) == "or" || arg_map["boolType"].at(i) == "OR") {
+//                should_insert = should_insert || restrictions_satisfied_arr[i + 1];
+//            }
+//        }
+        should_insert = satisfy_query(restrictions_satisfied_arr);
 
-            if (arg_map["boolType"].at(i) == "and" || arg_map["boolType"].at(i) == "AND") {
-                should_insert = should_insert && restrictions_satisfied_arr[i + 1];
-            }
-            else if (arg_map["boolType"].at(i) == "or" || arg_map["boolType"].at(i) == "OR") {
-                should_insert = should_insert || restrictions_satisfied_arr[i + 1];
-            }
-        }
     } else {
         //TODO: throw exception
     }
@@ -517,6 +568,84 @@ bool Filter::should_insert(const bson_t* input_doc) {
     delete[] restrictions_satisfied_arr;
 
     return should_insert;
+}
+
+bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
+    std::stack<std::string> bool_expr_stack;
+    std::vector<std::string> bool_expr_list;
+    bool satisfy_query;
+    std::string bool_operator;
+    std::string restriction;
+    bool restriction_value;
+    bool braced_value;
+    std::string curt_symbol;
+    std::string pushed_value;
+
+    bool_expr_list = arg_map["boolExpression"];
+    satisfy_query = false;
+
+    // we already checks the validation of braces in the checker, so we do not check again here
+    for (int i = 0; i < bool_expr_list.size(); i++) {
+        curt_symbol = bool_expr_list.at(i);
+        if (curt_symbol != ")") {
+            bool_expr_stack.push(curt_symbol);
+
+        }
+            // we never push ")" into stack, only take it to backtrack latest "(" in stack
+        if (curt_symbol == ")" ||
+                // all braces has been consumed but we still have non-braced expression
+                (i == bool_expr_list.size() - 1 && !bool_expr_stack.empty())) {
+
+            // current top element must be a restriction
+            // top element has not been modified and is still index of restrictions_satisfied_arr
+            if (bool_expr_stack.top().find_first_not_of("0123456789") == std::string::npos) {
+                braced_value = restrictions_satisfied_arr[stoi(bool_expr_stack.top())];
+                bool_expr_stack.pop();
+
+                // else bool_expr_stack.top() should have been modified as "true" or "false"
+            } else {
+                braced_value = bool_expr_stack.top() == "true";
+                bool_expr_stack.pop();
+            }
+
+            while (!bool_expr_stack.empty() && bool_expr_stack.top() != "(") {
+
+                // there must exist one or more [restriction, bool_operator] combinations
+                bool_operator = bool_expr_stack.top();
+                bool_expr_stack.pop();
+                restriction = bool_expr_stack.top();
+                bool_expr_stack.pop();
+
+                if (restriction.find_first_not_of("0123456789") == std::string::npos) {
+                    restriction_value = restrictions_satisfied_arr[stoi(restriction)];
+                } else {
+                    restriction_value = restriction == "true";
+                }
+
+                if (bool_operator == "|")
+                    braced_value = braced_value || restriction_value;
+                else
+                    // else bool_operator is "&"
+                    braced_value = braced_value && restriction_value;
+            }
+
+            if (!bool_expr_stack.empty() && bool_expr_stack.top() == "(") {
+
+                bool_expr_stack.pop();
+                // the current deepest braced expression in stack is replaced with pushed value
+                pushed_value = braced_value ? "true" : "false";
+                bool_expr_stack.push(pushed_value);
+            }
+
+            // this must be reached eventually
+            if (bool_expr_stack.empty()) {
+                satisfy_query = braced_value;
+                std::cout << "input doc satisfy query: " << satisfy_query << std::endl;
+            }
+        }
+    }
+
+    return satisfy_query;
 }
 
 void Filter::perform_pegtl_parser(std::string& query) {

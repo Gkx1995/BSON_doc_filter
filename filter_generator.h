@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "stack"
 // third party include
 #include <tao/pegtl.hpp>
 #include <libbson-1.0/bson.h>
@@ -45,12 +46,12 @@ private:
     bson_t* append_array(bson_t* bson_doc, std::string& field);
     void generate_basic_element_doc(bson_t* returned_doc, bson_iter_t* iter);
     bool find_and_append_unique_id(bson_t* returned_doc, const bson_t* input_doc);
+    bool satisfy_query(bool restrictions_satisfied_arr[]);
 
 protected:
     std::map<std::string, std::vector<std::string>> arg_map;
     std::map<std::string, unsigned long> data_type_map;
     std::vector<_bson_t*> filters;
-
 };
 
 #endif //_FILTER_GENERATOR_UTILS_H
