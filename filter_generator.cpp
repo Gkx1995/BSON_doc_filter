@@ -222,7 +222,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
 
     returned_doc = bson_new();
     // find and append OId
-    if (find_and_append_oid(returned_doc, input_doc)) {
+    if (find_and_append_unique_id(returned_doc, input_doc)) {
 
         for (long i = 0; i < selected_num; ++i) {
             std::istringstream iss(selected_list.at(i));
@@ -279,7 +279,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
     return nullptr;
 }
 
-bool Filter::find_and_append_oid(bson_t* returned_doc, const bson_t* input_doc) {
+bool Filter::find_and_append_unique_id(bson_t* returned_doc, const bson_t* input_doc) {
     bson_iter_t iter;
     const char* key;
     bson_type_t type;
@@ -289,16 +289,17 @@ bool Filter::find_and_append_oid(bson_t* returned_doc, const bson_t* input_doc) 
 
         while (bson_iter_next(&iter)) {
             type = bson_iter_type(&iter);
-            if (type == BSON_TYPE_OID) {
-                key = bson_iter_key(&iter);
+            key = bson_iter_key(&iter);
+            if (strncmp(key, "_id", 5) == 0) {
+
                 value = bson_iter_value(&iter);
-                std::cout << "OId found for this input doc" << std::endl;
+                std::cout << "_id found for this input doc" << std::endl;
                 BSON_APPEND_OID(returned_doc, key, &value->value.v_oid);
                 return true;
             }
         }
     }
-    std::cerr << "OId not found for this input doc" << std::endl;
+    std::cerr << "_id not found for this input doc" << std::endl;
     return false;
 }
 
@@ -345,11 +346,11 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_iter)
             BSON_APPEND_UNDEFINED(b, key);
 
         case BSON_TYPE_OID:
-//            BSON_APPEND_OID(b, key, &value->value.v_oid);
-//            break;
+            BSON_APPEND_OID(b, key, &value->value.v_oid);
+            break;
 
             // we have already inserted OID by default
-            return;
+//            return;
 
         case BSON_TYPE_BOOL:
             BSON_APPEND_BOOL(b, key, value->value.v_bool);
