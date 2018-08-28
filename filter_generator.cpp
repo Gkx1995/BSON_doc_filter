@@ -104,6 +104,7 @@ namespace tao {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
                     arg_map["selected"].push_back(in.string());
+                    restriction_count = 0;
 
                     std::cout << "selected matched: " << in.string() << std::endl;
                 }
