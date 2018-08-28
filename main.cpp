@@ -45,7 +45,7 @@ int main() {
 //    generate_fixed_input_doc();
 
 //    query sth matched with input doc
-    std::string query = "select foo.bar.1.baz_1";
+    std::string query = "select * where bool 'b o o l' = 0 and int32 'in t 32' = 1000 and bool bool = 1 and utf8 'utf 8' = 'utf 8'";
 
     // select all, should return 1
 //    std::string query = "where *";
