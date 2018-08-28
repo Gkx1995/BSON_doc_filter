@@ -575,8 +575,8 @@ TEST_CASE("Test braced query") {
     std::string q6 = "select * where (((int32 int32 *) or (double double = 10.50)) and int64 int64 >= 300) and (((bool bool *)))";
     CHECK(should_insert(input_doc, q6) == true);
 
-    std::string q6 = "select * where (((int32 int32 *) or (double double = 10.50) and oid _id = 5b843debf88cf51106bfdade) and int64 int64 >= 300) and (((bool bool *)))";
-    CHECK(should_insert(input_doc, q6) == true);
+    std::string q7 = "select * where (((int32 int32 *) or (double double = 10.50) and oid _id = 5b843debf88cf51106bfdade) and int64 int64 >= 300) and (((bool bool *)))";
+    CHECK(should_insert(input_doc, q7) == true);
 
     delete(input_doc);
 }
