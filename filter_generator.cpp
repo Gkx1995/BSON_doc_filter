@@ -654,9 +654,9 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
     if (!bool_expr_stack.empty()) {
         // deal with non-braced expression
         if (bool_expr_stack.top().find_first_not_of("0123456789") == std::string::npos) {
-            braced_value = restrictions_satisfied_arr[stoi(restriction)];
+            braced_value = restrictions_satisfied_arr[stoi(bool_expr_stack.top())];
         } else {
-            braced_value = restriction == "true";
+            braced_value = bool_expr_stack.top() == "true";
         }
         std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
         bool_expr_stack.pop();
