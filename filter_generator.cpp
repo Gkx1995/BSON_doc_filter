@@ -76,8 +76,8 @@ namespace tao {
             struct relationType: sor<string<'<', '='>, string<'>', '='>, string<'!', '='>, string<'>'>,
                     string<'<'>, string<'='>> {};
 
-            struct not_quoted_term: plus<not_one<' '>> {};
-            struct nested_term: plus<not_one<'\''>> {};
+            struct not_quoted_term: plus<seq<not_one<' '>, not_one<')'>>> {};
+            struct nested_term: plus<seq<not_one<'\''>, not_one<')'>>> {};
             struct single_quoted_term: seq<one<'\''>, nested_term,  one<'\''>> {};
             struct term: sor<single_quoted_term, not_quoted_term>{};
             struct select_field: plus<not_one<' ', ','>> {};
