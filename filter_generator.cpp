@@ -298,6 +298,7 @@ bool Filter::find_and_append_oid(bson_t* returned_doc, const bson_t* input_doc) 
             }
         }
     }
+    std::cerr << "OId not found for this input doc" << std::endl;
     return false;
 }
 
@@ -341,11 +342,14 @@ void Filter::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_iter)
             break;
 
         case BSON_TYPE_UNDEFINED:
-            return;
+            BSON_APPEND_UNDEFINED(b, key);
 
         case BSON_TYPE_OID:
-            BSON_APPEND_OID(b, key, &value->value.v_oid);
-            break;
+//            BSON_APPEND_OID(b, key, &value->value.v_oid);
+//            break;
+
+            // we have already inserted OID by default
+            return;
 
         case BSON_TYPE_BOOL:
             BSON_APPEND_BOOL(b, key, value->value.v_bool);
