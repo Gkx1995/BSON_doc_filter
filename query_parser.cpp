@@ -233,7 +233,7 @@ namespace tao {
 
 Parser::Parser() {}
 
-void Parser::void perform_pegtl_parser(std::string& query, std::map<std::string, std::vector<std::string>> &arg_map) {
+void Parser::perform_pegtl_parser(std::string& query, std::map<std::string, std::vector<std::string>> &arg_map) {
     // generate memory_input
     tao::pegtl::memory_input<> in(query, "");
 
