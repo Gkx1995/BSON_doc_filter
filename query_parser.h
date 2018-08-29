@@ -9,7 +9,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "stack"
 // third party include
 #include <tao/pegtl.hpp>
 
