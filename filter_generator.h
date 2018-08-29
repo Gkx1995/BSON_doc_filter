@@ -42,10 +42,6 @@ private:
     void perform_pegtl_parser(std::string& query);
     void generate_data_type_map();
     bson_t* generate_unnested_filter(std::string& field, std::string& term, std::string& dataType);
-    bson_t* append_document(bson_t* bson_doc, std::string& field);
-    bson_t* append_array(bson_t* bson_doc, std::string& field);
-    void generate_basic_element_doc(bson_t* returned_doc, bson_iter_t* iter);
-    bool find_and_append_unique_id(bson_t* returned_doc, const bson_t* input_doc);
     bool satisfy_query(bool restrictions_satisfied_arr[]);
 
 protected:
