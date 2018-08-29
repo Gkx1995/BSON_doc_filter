@@ -4,7 +4,6 @@
 
 #include <tao/pegtl.hpp>
 #include "filter_generator.h"
-#include "projection_generator.h"
 
 //////////////////////////////////////////////////////////
 // PEGTL rules and actions
@@ -257,11 +256,14 @@ Filter::~Filter() {
 
 void Filter::perform_pegtl_parser(std::string& query) {
 
-    // generate memory_input
-    tao::pegtl::memory_input<> in(query, "");
+//    // generate memory_input
+//    tao::pegtl::memory_input<> in(query, "");
+//
+//    // apply input and generate arg_map
+//    tao::pegtl::parse<tao::pegtl::test::grammar, tao::pegtl::test::action> (in, arg_map);
 
-    // apply input and generate arg_map
-    tao::pegtl::parse<tao::pegtl::test::grammar, tao::pegtl::test::action> (in, arg_map);
+    auto* parser = new Parser();
+    parser->perform_pegtl_parser(query, arg_map);
 
     generate_data_type_map();
 

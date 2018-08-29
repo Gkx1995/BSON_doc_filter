@@ -14,6 +14,8 @@
 #include <tao/pegtl.hpp>
 #include <libbson-1.0/bson.h>
 #include "filter_compare_util.h"
+#include "projection_generator.h"
+#include "query_parser.h"
 
 class Filter{
 public:
