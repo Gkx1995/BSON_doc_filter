@@ -73,7 +73,8 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
                         element_doc = append_document(element_doc, tokens.at(j));
                 }
                 BSON_APPEND_DOCUMENT(tmp_doc, tokens.at(0).c_str(), element_doc);
-                bson_concat(tmp_doc, returned_doc);
+                bson_concat(returned_doc, tmp_doc);
+                std::cout << "returned doc appended: " << bson_as_json(returned_doc, NULL) << std::endl;
                 bson_destroy(tmp_doc);
                 bson_destroy(element_doc);
             }
