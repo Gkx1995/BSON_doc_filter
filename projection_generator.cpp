@@ -9,9 +9,6 @@ Projector::Projector(std::vector<std::string> &selected_fields_list) {
     this->selected_fields_list = selected_fields_list;
 }
 
-// Destructor
-Projector::~Projector() {}
-
 const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
     bson_t* returned_doc;
     long selected_num;
@@ -34,7 +31,7 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
             std::vector<std::string> tokens;
             std::string token, last_token;
             bson_iter_t iter, last_token_iter;
-            bson_t* element_doc;
+            bson_t* element_doc, *tmp_doc;
             bool valid_field;
 
             valid_field = true;
@@ -62,6 +59,7 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
                 generate_basic_element_doc(returned_doc, &last_token_iter);
             } else {
                 element_doc = bson_new();
+                tmp_doc = bson_new();
                 generate_basic_element_doc(element_doc, &last_token_iter);
                 for (long j = tokens.size() - 2; j > 0; j--) {
 
@@ -74,7 +72,10 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
                     else
                         element_doc = append_document(element_doc, tokens.at(j));
                 }
-                BSON_APPEND_DOCUMENT(returned_doc, tokens.at(0).c_str(), element_doc);
+                BSON_APPEND_DOCUMENT(tmp_doc, tokens.at(0).c_str(), element_doc);
+                bson_concat(tmp_doc, returned_doc);
+                bson_destroy(tmp_doc);
+                bson_destroy(element_doc);
             }
         }
 
@@ -224,6 +225,7 @@ bson_t* Projector::append_document(bson_t* bson_doc, std::string& field) {
     bson_t* return_doc;
     return_doc = bson_new();
     BSON_APPEND_DOCUMENT(return_doc, field.c_str(), bson_doc);
+    bson_destroy(bson_doc);
     std::cout << "nested doc appended: " << bson_as_json(return_doc, NULL) << std::endl;
     return return_doc;
 }
@@ -232,6 +234,7 @@ bson_t* Projector::append_array(bson_t* bson_doc, std::string& field) {
     bson_t* return_doc;
     return_doc = bson_new();
     BSON_APPEND_ARRAY(return_doc, field.c_str(), bson_doc);
+    bson_destroy(bson_doc);
     std::cout << "nested array appended: " << bson_as_json(return_doc, NULL) << std::endl;
     return return_doc;
 }
