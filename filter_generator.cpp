@@ -551,6 +551,7 @@ bson_t* Filter::generate_input_doc() {
 
     // generate nested element {document:{a: {b: {c: 1}}}}
     BSON_APPEND_INT32(c, "c", 1);
+    BSON_APPEND_INT32(c, "d", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
     BSON_APPEND_DOCUMENT(input_doc, "document", a);

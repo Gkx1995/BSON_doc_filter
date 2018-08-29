@@ -45,7 +45,7 @@ int main() {
 //    generate_fixed_input_doc();
 
 //    query sth matched with input doc
-    std::string query = "select document.a.b.c,foo.bar.0.baz_0,int32,foo.bar.1.baz_1 where ((int32 int32 *) or (double double = 10.50)) and int64 int64 >= 300";
+    std::string query = "select document.a.b.c,document.a.b.d,foo.bar.0.baz_0,int32,foo.bar.1.baz_1 where ((int32 int32 *) or (double double = 10.50)) and int64 int64 >= 300";
 
     // select all, should return 1
 //    std::string query = "where *";
