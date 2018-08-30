@@ -5,8 +5,15 @@
 #include "projection_generator.h"
 
 // Constructor
-Projector::Projector(std::vector<std::string> &selected_fields_list) {
+Projector::Projector(std::vector<std::string> &selected_fields_list, const std::string& shard_key) {
     this->selected_fields_list = selected_fields_list;
+
+    // check if we have already selected shard key or not
+    if (!shard_key.empty()
+            && std::find(selected_fields_list.begin(), selected_fields_list.end(), shard_key) != selected_fields_list.end()) {
+        selected_fields_list.push_back(shard_key);
+        std::cout << "Shard key added: " << shard_key << std::endl;
+    }
 }
 
 const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
@@ -20,7 +27,7 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
     std::cout << "selected_num = " << selected_num << std::endl;
 
     if (selected_num == 0 || selected_fields_list.at(0) == "*")
-        return input_doc;
+        return bson_copy(input_doc);
 
     returned_doc = bson_new();
     // find and append OId
@@ -97,7 +104,7 @@ bool Projector::find_and_append_unique_id(bson_t* returned_doc, const bson_t* in
         while (bson_iter_next(&iter)) {
             type = bson_iter_type(&iter);
             key = bson_iter_key(&iter);
-            if (strncmp(key, "_id", 5) == 0) {
+            if (strcmp(key, "_id") == 0) {
 
                 value = bson_iter_value(&iter);
                 std::cout << "_id found for this input doc" << std::endl;

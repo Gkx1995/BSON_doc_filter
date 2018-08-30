@@ -26,7 +26,7 @@ public:
 
     // entry point to filter input_doc
     bool should_insert(const bson_t* input_doc);
-    const bson_t* get_input_doc_if_satisfied_filter(const bson_t* input_doc);
+    const bson_t* get_input_doc_if_satisfied_filter(const bson_t* input_doc, const std::string& shard_key);
 
     //////////////////////////////////////////////////////////
     // methods for testing

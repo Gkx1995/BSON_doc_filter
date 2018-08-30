@@ -40,13 +40,13 @@ void Filter::perform_pegtl_parser(std::string& query) {
     }
 }
 
-const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
+const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc, const std::string& shard_key) {
     Projector* projector = NULL;
 
     if (!should_insert(input_doc))
         return nullptr;
 
-    projector = new Projector(arg_map["selected"]);
+    projector = new Projector(arg_map["selected"], shard_key);
     return projector->get_input_doc_if_satisfied_filter(input_doc);
 
 }

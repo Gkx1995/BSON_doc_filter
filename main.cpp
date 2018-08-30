@@ -78,7 +78,8 @@ int main() {
     }
 
 //    delete(filter);
-    delete(input_doc);
+    bson_destroy(input_doc);
+    bson_destroy((bson_t*)projection);
 
     return 0;
 }
