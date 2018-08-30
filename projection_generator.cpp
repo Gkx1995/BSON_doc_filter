@@ -9,12 +9,14 @@ Projector::Projector(std::vector<std::string> &selected_fields_list, const std::
     this->selected_fields_list = selected_fields_list;
 
     // check if we have already selected shard key or not
+    std::cout << "Shard key is: " << shard_key << std::endl;
     if (!shard_key.empty()
-            && std::find(selected_fields_list.begin(), selected_fields_list.end(), shard_key) != selected_fields_list.end()) {
+        && std::find(selected_fields_list.begin(), selected_fields_list.end(), shard_key) == selected_fields_list.end()) {
         selected_fields_list.push_back(shard_key);
-        std::cout << "Shard key added: " << shard_key << std::endl;
+        std::cout << "Query not included shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
     }
 }
+
 
 const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
     bson_t* returned_doc;

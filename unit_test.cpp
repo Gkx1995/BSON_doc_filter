@@ -33,6 +33,7 @@ bson_t* generate_fixed_input_doc() {
     BSON_APPEND_NULL(input_doc, "null");
     BSON_APPEND_INT32(input_doc, "in t 32", 1000);
     BSON_APPEND_BOOL(input_doc, "b o o l", false);
+    BSON_APPEND_UNDEFINED(input_doc, "undefined");
 
     BSON_APPEND_UTF8(input_doc, "utf 8", "utf 8");
 
@@ -531,6 +532,225 @@ TEST_CASE("Test projections: select document.a.b.c,int32 where maxkey maxkey !",
         delete (output_doc_1);
         delete (input_doc);
     }
+}
+
+TEST_CASE("Test projections: select bool", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select bool";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_BOOL(valid_doc_1, "bool", true);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select utf8", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select utf8";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_UTF8(valid_doc_1, "utf8", "99");
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select date_time", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select date_time";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_DATE_TIME(valid_doc_1, "date_time", 400);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select symbol", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select symbol";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_SYMBOL(valid_doc_1, "symbol", "***");
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select maxkey", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select maxkey";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_MAXKEY(valid_doc_1, "maxkey");
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select minkey", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select minkey";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_MINKEY(valid_doc_1, "minkey");
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select null", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select null";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_NULL(valid_doc_1, "null");
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select undefined", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select undefined";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_UNDEFINED(valid_doc_1, "undefined");
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select decimal128", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+    bson_decimal128_t decimal128;
+
+    std::string q1 = "select decimal128";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+
+    bson_decimal128_from_string("500", &decimal128);
+    BSON_APPEND_DECIMAL128(valid_doc_1, "decimal128", &decimal128);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
 }
 
 TEST_CASE("Test oid") {
