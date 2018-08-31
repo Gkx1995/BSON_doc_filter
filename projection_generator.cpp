@@ -70,7 +70,6 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
             } else {
                 token_idx = tokens.size() - 1;
                 element_doc = bson_new();
-                tmp_doc = bson_new();
                 generate_basic_element_doc(element_doc, &last_token_iter);
                 token_idx--;
 
