@@ -21,7 +21,7 @@ public:
     ~Projector();
 
     // entry point
-    const bson_t* get_input_doc_if_satisfied_filter(const bson_t* input_doc);
+    bson_t* get_input_doc_if_satisfied_filter(const bson_t* input_doc);
 
 private:
 

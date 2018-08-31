@@ -18,7 +18,7 @@ Projector::Projector(std::vector<std::string> &selected_fields_list, const std::
 }
 
 
-const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
+bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
     bson_t* returned_doc;
     long selected_num;
     long valid_selected_num;
