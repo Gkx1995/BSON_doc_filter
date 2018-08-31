@@ -19,7 +19,7 @@ bson_t* generate_fixed_input_doc() {
     bson_t* c = bson_new();
     bson_oid_t oid = get_fixed_oid();
 
-    input_doc = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "{", "baz_1", BCON_INT32 (1), "}", "]", "}");
+    input_doc = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "{", "baz_1", BCON_INT32 (1), "}", "[", "[", BCON_INT32(2), "]", "]", "]", "}");
     BSON_APPEND_OID(input_doc, "_id", &oid);
     BSON_APPEND_BOOL(input_doc, "bool", true);
     BSON_APPEND_UTF8(input_doc, "utf8", "99");
@@ -865,6 +865,30 @@ TEST_CASE("Test projections: select inside array_2", "[get_input_doc_if_satisfie
     std::string q1 = "select foo.bar.1.baz_1";
     const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
     bson_t* valid_doc_1 = BCON_NEW("foo", "{", "bar", "[", "{", "baz_1", BCON_INT32 (1), "}", "]", "}");
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
+}
+
+TEST_CASE("Test projections: select inside array_3", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select foo.bar.2.0.0";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1);
+    bson_t* valid_doc_1 = BCON_NEW("foo", "{", "bar", "[", "[", "[", BCON_INT32 (2), "]", "]", "]", "}");
     bson_oid_t oid = get_fixed_oid();
     BSON_APPEND_OID(valid_doc_1, "_id", &oid);
 
