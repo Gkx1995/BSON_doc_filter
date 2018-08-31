@@ -215,9 +215,9 @@ void Projector::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_it
             break;
 
         case BSON_TYPE_DECIMAL128: {
-            bson_decimal128_t* dec = NULL;
-            bson_iter_decimal128(last_token_iter, dec);
-            BSON_APPEND_DECIMAL128(b, key, dec);
+            bson_decimal128_t dec;
+            bson_iter_decimal128(last_token_iter, &dec);
+            BSON_APPEND_DECIMAL128(b, key, &dec);
             break;
 
         }
