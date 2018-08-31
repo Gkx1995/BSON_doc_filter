@@ -72,21 +72,15 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
                 element_doc = bson_new();
                 tmp_doc = bson_new();
                 generate_basic_element_doc(element_doc, &last_token_iter);
-
-                // check if we are selecting inside array
-                if (tokens.at(token_idx).find_first_not_of("0123456789") == std::string::npos && tokens.size() > 1) {
-                    element_doc = append_array(element_doc, tokens.at(--token_idx));
-                }
+                token_idx--;
 
                 for (; token_idx >= 0; token_idx--) {
 
                     // this token contains only digit and is supposed to be appended as array
                     if (tokens.at(token_idx).find_first_not_of("0123456789") == std::string::npos && token_idx > 0) {
                         std::string arr_key = "0";
-                        element_doc = append_document(element_doc, arr_key);
-                        element_doc = append_array(element_doc, tokens.at(--token_idx));
-                    }
-                    else
+                        element_doc = append_array(element_doc, arr_key);
+                    } else
                         element_doc = append_document(element_doc, tokens.at(token_idx));
                 }
 
