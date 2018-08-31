@@ -78,8 +78,7 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
 
                     // this token contains only digit and is supposed to be appended as array
                     if (tokens.at(token_idx + 1).find_first_not_of("0123456789") == std::string::npos) {
-                        std::string arr_key = "0";
-                        element_doc = append_array(element_doc, arr_key);
+                        element_doc = append_array(element_doc, tokens.at(token_idx));
                     } else
                         element_doc = append_document(element_doc, tokens.at(token_idx));
                 }
@@ -170,10 +169,6 @@ void Projector::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_it
             BSON_APPEND_UNDEFINED(b, key);
 
         case BSON_TYPE_OID:
-            // we have already inserted _id by default
-            if (strncmp(key, "_id", 5) == 0)
-                return;
-
             BSON_APPEND_OID(b, key, &value->value.v_oid);
             break;
 
@@ -240,6 +235,11 @@ void Projector::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_it
 }
 
 bson_t* Projector::append_document(bson_t* bson_doc, std::string& field) {
+
+    // current field is an array element
+    if (field.find_first_not_of("0123456789") == std::string::npos)
+        field = "0";
+
     bson_t* return_doc;
     return_doc = bson_new();
     BSON_APPEND_DOCUMENT(return_doc, field.c_str(), bson_doc);
@@ -249,6 +249,11 @@ bson_t* Projector::append_document(bson_t* bson_doc, std::string& field) {
 }
 
 bson_t* Projector::append_array(bson_t* bson_doc, std::string& field) {
+
+    // current field is an array element
+    if (field.find_first_not_of("0123456789") == std::string::npos)
+        field = "0";
+
     bson_t* return_doc;
     return_doc = bson_new();
     BSON_APPEND_ARRAY(return_doc, field.c_str(), bson_doc);
