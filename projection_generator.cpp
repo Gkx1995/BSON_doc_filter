@@ -42,6 +42,7 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
             bson_iter_t iter, last_token_iter;
             bson_t* element_doc, *tmp_doc;
             bool valid_field;
+            long token_idx;
 
             valid_field = true;
             while (std::getline(iss, token, '.')) {
@@ -67,20 +68,28 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
             if (tokens.size() == 1) {
                 generate_basic_element_doc(returned_doc, &last_token_iter);
             } else {
+                token_idx = tokens.size() - 1;
                 element_doc = bson_new();
                 tmp_doc = bson_new();
                 generate_basic_element_doc(element_doc, &last_token_iter);
-                for (long j = tokens.size() - 2; j > 0; j--) {
+
+                // check if we are selecting inside array
+                if (tokens.at(token_idx).find_first_not_of("0123456789") == std::string::npos && tokens.size() > 1) {
+                    element_doc = append_array(element_doc, tokens.at(--token_idx));
+                }
+
+                for (; token_idx >= 0; token_idx--) {
 
                     // this token contains only digit and is supposed to be appended as array
-                    if (tokens.at(j).find_first_not_of("0123456789") == std::string::npos && j > 0) {
+                    if (tokens.at(token_idx).find_first_not_of("0123456789") == std::string::npos && token_idx > 0) {
                         std::string arr_key = "0";
                         element_doc = append_document(element_doc, arr_key);
-                        element_doc = append_array(element_doc, tokens.at(--j));
+                        element_doc = append_array(element_doc, tokens.at(--token_idx));
                     }
                     else
-                        element_doc = append_document(element_doc, tokens.at(j));
+                        element_doc = append_document(element_doc, tokens.at(token_idx));
                 }
+
                 BSON_APPEND_DOCUMENT(tmp_doc, tokens.at(0).c_str(), element_doc);
                 bson_concat(returned_doc, tmp_doc);
                 std::cout << "returned doc appended: " << bson_as_json(returned_doc, NULL) << std::endl;
@@ -110,7 +119,8 @@ bool Projector::find_and_append_unique_id(bson_t* returned_doc, const bson_t* in
 
                 value = bson_iter_value(&iter);
                 std::cout << "_id found for this input doc" << std::endl;
-                BSON_APPEND_OID(returned_doc, key, &value->value.v_oid);
+//                BSON_APPEND_OID(returned_doc, key, &value->value.v_oid);
+                generate_basic_element_doc(returned_doc, &iter);
                 return true;
             }
         }
@@ -127,6 +137,11 @@ void Projector::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_it
     key = bson_iter_key(last_token_iter);
     type = bson_iter_type(last_token_iter);
     value = bson_iter_value(last_token_iter);
+
+    // for array type, we only support select one child element for now, so the key would always be "0"
+    if (std::string(key).find_first_not_of("0123456789") == std::string::npos)
+        key = "0";
+
 
     switch (type) {
         case BSON_TYPE_EOD:
