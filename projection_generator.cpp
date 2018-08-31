@@ -77,17 +77,16 @@ const bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_
                 for (; token_idx >= 0; token_idx--) {
 
                     // this token contains only digit and is supposed to be appended as array
-                    if (tokens.at(token_idx).find_first_not_of("0123456789") == std::string::npos && token_idx > 0) {
+                    if (tokens.at(token_idx + 1).find_first_not_of("0123456789") == std::string::npos) {
                         std::string arr_key = "0";
                         element_doc = append_array(element_doc, arr_key);
                     } else
                         element_doc = append_document(element_doc, tokens.at(token_idx));
                 }
 
-                BSON_APPEND_DOCUMENT(tmp_doc, tokens.at(0).c_str(), element_doc);
-                bson_concat(returned_doc, tmp_doc);
+                bson_concat(returned_doc, element_doc);
                 std::cout << "returned doc appended: " << bson_as_json(returned_doc, NULL) << std::endl;
-                bson_destroy(tmp_doc);
+//                bson_destroy(tmp_doc);
                 bson_destroy(element_doc);
             }
         }
