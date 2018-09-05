@@ -393,15 +393,15 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
     }
     else if (_data_type == BSON_TYPE_ARRAY) {
         // TODO: need to specifically define this case
-        array = nullptr;
-         BSON_APPEND_ARRAY(b, field.c_str(), array);
+        std::cerr << "Currently we do not support directly query for array type" << std::endl;
+    }
+    else if (_data_type == BSON_TYPE_DOCUMENT) {
+        // TODO: need to specifically define this case
+        std::cerr << "Currently we do not support directly query for document type" << std::endl;
     }
     else if (_data_type == BSON_TYPE_BINARY) {
         // TODO: need to specifically define this case
-        binary_subtype;
-        binary = nullptr;
-        binary_length;
-        BSON_APPEND_BINARY(b, field.c_str(), binary_subtype, binary, binary_length);
+        std::cerr << "Currently we do not support directly query for binary type" << std::endl;
     }
     else if (_data_type == BSON_TYPE_UNDEFINED) {
         BSON_APPEND_UNDEFINED(b, field.c_str());
@@ -425,16 +425,12 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
     }
     else if (_data_type == BSON_TYPE_REGEX) {
         // TODO: need to include [const char *options] as a param
-        reg_options = nullptr;
-        regex = term.c_str();
-        BSON_APPEND_REGEX(b, field.c_str(), regex, reg_options);
+        std::cerr << "Currently we do not support directly query for regex type" << std::endl;
     }
     else if (_data_type == BSON_TYPE_DBPOINTER) {
         //TODO: need to specifically define OID
         // Warning: The dbpointer field type is DEPRECATED and should only be used when interacting with legacy systems.
-        collection = term.c_str();
-        dbp_oid = nullptr;
-        BSON_APPEND_DBPOINTER(b, field.c_str(), collection, dbp_oid);
+        std::cerr << "Currently we do not support directly query for dbpointer type" << std::endl;
     }
     else if (_data_type == BSON_TYPE_CODE) {
         //javascript: A UTF-8 encoded string containing the javascript.
@@ -449,9 +445,7 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
     else if (_data_type == BSON_TYPE_CODEWSCOPE) {
         //TODO: need to specifically define [const bson_t *scope]
         // scope: Optional bson_t containing the scope for javascript.
-        cws_javascript = term.c_str();
-        cws_scope = nullptr;
-        BSON_APPEND_CODE_WITH_SCOPE(b, field.c_str(), cws_javascript, cws_scope);
+        std::cerr << "Currently we do not support directly query for codewscope type" << std::endl;
     }
     else if (_data_type == BSON_TYPE_INT32) {
         BSON_APPEND_INT32(b, field.c_str(), std::stoi(term));
@@ -460,12 +454,20 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
         BSON_APPEND_INT64(b, field.c_str(), std::stoi(term));
     }
     else if (_data_type == BSON_TYPE_TIMESTAMP) {
-        //TODO: need to specifically define [unit32_t timestamp] and [unit32_t increment]
         // This function is not similar in functionality to bson_append_date_time().
         // Timestamp elements are different in that they include only second precision and an increment field.
         // They are primarily used for intra-MongoDB server communication.
-        timestamp = strtoul(term.c_str(), NULL, 10);
-        increment;
+        std::istringstream iss(term);
+        std::vector<std::string> tokens;
+        std::string token;
+
+        while (std::getline(iss, token, '_')) {
+            if (!token.empty())
+                tokens.push_back(token);
+        }
+
+        timestamp = strtoul(tokens.at(0).c_str(), NULL, 10);
+        increment = strtoul(tokens.at(1).c_str(), NULL, 10);
         BSON_APPEND_TIMESTAMP(b, field.c_str(), timestamp, increment);
     }
     else if (_data_type == BSON_TYPE_DECIMAL128) {
@@ -473,7 +475,6 @@ bson_t* Filter::generate_unnested_filter(std::string& field, std::string& term, 
         BSON_APPEND_DECIMAL128(b, field.c_str(), &decimal128);
     }
     else if (_data_type == BSON_TYPE_MAXKEY) {
-        //TODO: there is no term in this case, need to handle this
         BSON_APPEND_MAXKEY(b, field.c_str());
     }
     else if (_data_type == BSON_TYPE_MINKEY) {

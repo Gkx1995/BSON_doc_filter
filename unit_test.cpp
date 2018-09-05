@@ -42,6 +42,7 @@ bson_t* generate_fixed_input_doc() {
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
     BSON_APPEND_DOCUMENT(input_doc, "document", a);
+    BSON_APPEND_TIMESTAMP(input_doc, "timestamp", 500, 1);
 
 
 
@@ -905,4 +906,29 @@ TEST_CASE("Test projections: select inside array_3", "[get_input_doc_if_satisfie
     }
     if (valid_doc_1)
         delete (valid_doc_1);
+}
+
+
+TEST_CASE("Test timestamp") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select * where timestamp timestamp = 500_1";
+    CHECK(should_insert(input_doc, q1) == true);
+
+    std::string q2 = "select * where timestamp timestamp <= 500_1";
+    CHECK(should_insert(input_doc, q2) == true);
+
+    std::string q3 = "select * where timestamp timestamp >= 500_1";
+    CHECK(should_insert(input_doc, q3) == true);
+
+    std::string q5 = "select * where timestamp timestamp != 500_1";
+    CHECK(should_insert(input_doc, q5) == false);
+
+    std::string q6 = "select * where oid _id *";
+    CHECK(should_insert(input_doc, q6) == true);
+
+    std::string q7 = "select * where oid _id !";
+    CHECK(should_insert(input_doc, q7) == false);
+
+    delete(input_doc);
 }

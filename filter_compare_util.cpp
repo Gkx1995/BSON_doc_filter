@@ -133,7 +133,7 @@ int filter_compare_elements(bson_iter_t *l, bson_iter_t *r)
 
         case BSON_TYPE_TIMESTAMP:
 
-            if (bson_iter_type(r) != BSON_TYPE_TIMESTAMP)\
+            if (bson_iter_type(r) != BSON_TYPE_TIMESTAMP)
                 return IGNORE_NUM;
 
             bson_iter_timestamp(l, &l_timestamp, &l_increment);
