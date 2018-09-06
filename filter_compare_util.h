@@ -25,6 +25,7 @@ permission is obtained from Datos IO, Inc.
 #include <dirent.h>
 #include <assert.h>
 #include <libbson-1.0/bson.h>
+#include "common_constants.h"
 
 // Mongo C includes
 
@@ -33,7 +34,7 @@ permission is obtained from Datos IO, Inc.
 // Datos common includes
 
 //  we should ignore this input_doc
-const int IGNORE_NUM = INT_MAX;
+//const int IGNORE_NUM = INT_MAX;
 
 int filter_compare_iterators(bson_iter_t *l, bson_iter_t *r);
 int filter_compare_elements(bson_iter_t *l, bson_iter_t *r);

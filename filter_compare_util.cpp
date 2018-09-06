@@ -26,6 +26,7 @@ permission is obtained from Datos IO, Inc.
 #include "filter_compare_util.h"
 
 using namespace std;
+using namespace CommonConstants;
 
 int canonicalize_bson_type(bson_type_t type) {
     switch (type) {

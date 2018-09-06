@@ -11,6 +11,6 @@ namespace CommonConstants {
 
     const std::string PLACE_HOLDER = "0";
 
-//    const int IGNORE_NUM = INT_MAX;
+    const int IGNORE_NUM = INT_MAX;
     // Add more here
 };

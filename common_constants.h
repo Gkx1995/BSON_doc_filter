@@ -17,7 +17,7 @@ namespace CommonConstants {
 
     extern const std::string PLACE_HOLDER;
 
-//    extern const int IGNORE_NUM;
+    extern const int IGNORE_NUM;
 
 
 };
