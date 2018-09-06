@@ -236,7 +236,7 @@ Parser::Parser() {}
 
 void Parser::perform_pegtl_parser(std::string& query, std::map<std::string, std::vector<std::string>> &arg_map) {
     // generate memory_input
-    tao::pegtl::test::restriction_count = 0;
+//    tao::pegtl::test::restriction_count = 0;
     tao::pegtl::memory_input<> in(query, "");
 
     // apply input and generate arg_map
