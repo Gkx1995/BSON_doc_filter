@@ -939,20 +939,5 @@ TEST_CASE("Test space tolerance") {
     std::string q1 = "select int32     ,    _id,int64 where ((  (int32 int32 *) or     (  double double     =   10.50   )    and oid _id = 5b843debf88cf51106bfdade) and int64 int64 >= 300) and (((bool bool *))  )";
     CHECK(should_insert(input_doc, q1) == true);
 
-    std::string q2 = "select * where timestamp timestamp <= 500_1";
-    CHECK(should_insert(input_doc, q2) == true);
-
-    std::string q3 = "select * where timestamp timestamp >= 500_1";
-    CHECK(should_insert(input_doc, q3) == true);
-
-    std::string q5 = "select * where timestamp timestamp != 500_1";
-    CHECK(should_insert(input_doc, q5) == false);
-
-    std::string q6 = "select * where oid _id *";
-    CHECK(should_insert(input_doc, q6) == true);
-
-    std::string q7 = "select * where oid _id !";
-    CHECK(should_insert(input_doc, q7) == false);
-
     delete(input_doc);
 }

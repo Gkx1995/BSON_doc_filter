@@ -82,7 +82,7 @@ namespace tao {
             struct left_brace: string<'('> {};
             struct right_brace: string<')'> {};
             struct restriction: seq<dataType, plus<space>, field, plus<space>, sor< seq<relationType, plus<space>, term>, exist_or_not>> {};
-            struct braced_restriction: seq<star<sor<left_brace, space>>, restriction, star<sor<right_brace, space>>> {};
+            struct braced_restriction: seq<star<sor<left_brace, space>>, restriction, opt<star<sor<right_brace, space>>, right_brace>> {};
             struct select_clause: seq<_select, plus<space>, select_field, star<seq<star<space>, one<','>, star<space>, select_field>>>{};
             struct where_clause: seq<_where, plus<space>, sor<_all, seq<braced_restriction, star<plus<space>, boolType, plus<space>, braced_restriction>>>> {};
             struct grammar: must<select_clause, opt<plus<space>, where_clause>, eof>{};
