@@ -4,7 +4,6 @@
 
 #include "query_parser.h"
 
-using namespace CommonConstants;
 //////////////////////////////////////////////////////////
 // PEGTL rules and actions
 //////////////////////////////////////////////////////////
@@ -33,8 +32,8 @@ namespace tao {
             //////////////////////////////////////////////////////////
             // define data type rules
             //////////////////////////////////////////////////////////
-            std::string eod = "eod";
-            struct _EOD: TAO_PEGTL_STRING(eod.c_str()){};
+
+            struct _EOD: TAO_PEGTL_STRING("eod"){};
             struct _DOUBLE: TAO_PEGTL_STRING("double"){};
             struct _UTF8: TAO_PEGTL_STRING("utf8"){};
             struct _DOCUMENT: TAO_PEGTL_STRING("document"){};
@@ -103,7 +102,7 @@ namespace tao {
             template<> struct action< select_field > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["selected"].push_back(in.string());
+                    arg_map[SELECTED_FIELD_LIST].push_back(in.string());
                     restriction_count = 0;
 
                     std::cout << "selected matched: " << in.string() << std::endl;
@@ -112,7 +111,7 @@ namespace tao {
             template<> struct action< nested_field > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["field"].push_back(in.string());
+                    arg_map[QUERY_FIELD_LIST].push_back(in.string());
 
                     std::cout << "field matched: " << in.string() << std::endl;
                 }
@@ -121,7 +120,7 @@ namespace tao {
             template<> struct action< not_quoted_field > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["field"].push_back(in.string());
+                    arg_map[QUERY_FIELD_LIST].push_back(in.string());
 
                     std::cout << "field matched: " << in.string() << std::endl;
                 }
@@ -130,7 +129,7 @@ namespace tao {
             template<> struct action< boolType > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["boolType"].push_back(in.string());
+                    arg_map[BOOL_OPERATOR_LIST].push_back(in.string());
 
                     std::cout << "boolType matched: " << in.string() << std::endl;
                 }
@@ -139,7 +138,7 @@ namespace tao {
             template<> struct action< nested_term > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["term"].push_back(in.string());
+                    arg_map[QUERY_VALUE_LIST].push_back(in.string());
 
                     std::cout << "term matched: " << in.string() << std::endl;
                 }
@@ -148,7 +147,7 @@ namespace tao {
             template<> struct action< not_quoted_term > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["term"].push_back(in.string());
+                    arg_map[QUERY_VALUE_LIST].push_back(in.string());
 
                     std::cout << "term matched: " << in.string() << std::endl;
                 }
@@ -157,7 +156,7 @@ namespace tao {
             template<> struct action< relationType > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["relationType"].push_back(in.string());
+                    arg_map[NUMERIC_OPERATOR_LIST].push_back(in.string());
 
                     std::cout << "relationType matched: " << in.string() << std::endl;
                 }
@@ -166,8 +165,8 @@ namespace tao {
             template<> struct action< exist_or_not > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["relationType"].push_back(in.string());
-                    arg_map["term"].push_back(PLACE_HOLDER);
+                    arg_map[NUMERIC_OPERATOR_LIST].push_back(in.string());
+                    arg_map[QUERY_VALUE_LIST].push_back(PLACE_HOLDER);
 
                     std::cout << "relationType matched: " << in.string() << std::endl;
                 }
@@ -176,7 +175,7 @@ namespace tao {
             template<> struct action< dataType > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["dataType"].push_back(in.string());
+                    arg_map[DATA_TYPE_LIST].push_back(in.string());
 
                     std::cout << "dataType matched: " << in.string() << std::endl;
                 }
@@ -185,7 +184,7 @@ namespace tao {
             template<> struct action< left_brace > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["boolExpression"].push_back(in.string());
+                    arg_map[BOOL_EXPR_LIST].push_back(in.string());
 
                     std::cout << "boolExpression appended: " << in.string() << std::endl;
                 }
@@ -194,7 +193,7 @@ namespace tao {
             template<> struct action< right_brace > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["boolExpression"].push_back(in.string());
+                    arg_map[BOOL_EXPR_LIST].push_back(in.string());
 
                     std::cout << "boolExpression appended: " << in.string() << std::endl;
                 }
@@ -203,7 +202,7 @@ namespace tao {
             template<> struct action< restriction > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["boolExpression"].push_back(std::to_string(restriction_count));
+                    arg_map[BOOL_EXPR_LIST].push_back(std::to_string(restriction_count));
 
                     std::cout << "boolExpression appended: restriction index is " << restriction_count << std::endl;
                     restriction_count++;
@@ -213,7 +212,7 @@ namespace tao {
             template<> struct action< _and > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["boolExpression"].push_back("&");
+                    arg_map[BOOL_EXPR_LIST].push_back("&");
 
                     std::cout << "boolExpression appended: and" << std::endl;
                 }
@@ -222,7 +221,7 @@ namespace tao {
             template<> struct action< _or > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map["boolExpression"].push_back("|");
+                    arg_map[BOOL_EXPR_LIST].push_back("|");
 
                     std::cout << "boolExpression appended: or" << std::endl;
                 }
