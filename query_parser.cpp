@@ -13,8 +13,6 @@ namespace tao {
     namespace pegtl {
         namespace test {
 
-//            const std::string PLACE_HOLDER = "0";
-//            int restriction_count = 0;
             //////////////////////////////////////////////////////////
             // PEGTL rules
             //////////////////////////////////////////////////////////
@@ -83,11 +81,11 @@ namespace tao {
             struct select_field: plus<not_one<' ', ','>> {};
             struct left_brace: string<'('> {};
             struct right_brace: string<')'> {};
-            struct restriction: seq<dataType, blank, field, blank, sor< seq<relationType, blank, term>, exist_or_not>> {};
+            struct restriction: seq<dataType, plus<space>, field, plus<space>, sor< seq<relationType, plus<space>, term>, exist_or_not>> {};
             struct braced_restriction: seq<star<left_brace>, restriction, star<right_brace>> {};
-            struct select_clause: seq<_select, blank, select_field, star<seq<one<','>, select_field>>>{};
-            struct where_clause: seq<_where, blank, sor<_all, seq<braced_restriction, star<blank, boolType, blank, braced_restriction>>>> {};
-            struct grammar: must<select_clause, opt<blank, where_clause>, eof>{};
+            struct select_clause: seq<_select, plus<space>, select_field, star<seq<star<space>, one<','>, star<space>, select_field>>>{};
+            struct where_clause: seq<_where, plus<space>, sor<_all, seq<braced_restriction, star<plus<space>, boolType, plus<space>, braced_restriction>>>> {};
+            struct grammar: must<select_clause, opt<plus<space>, where_clause>, eof>{};
 
 
             //////////////////////////////////////////////////////////

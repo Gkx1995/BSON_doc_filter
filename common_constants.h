@@ -6,7 +6,7 @@
 
 namespace CommonConstants {
 
-    //
+    // for queryable restore
     extern const std::string SELECTED_FIELD_LIST;
     extern const std::string DATA_TYPE_LIST;
     extern const std::string QUERY_FIELD_LIST;
