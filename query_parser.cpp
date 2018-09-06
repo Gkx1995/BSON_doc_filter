@@ -203,9 +203,9 @@ namespace tao {
             template<> struct action< restriction > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map[BOOL_EXPR_LIST].push_back(std::to_string(arg_map[QUERY_FIELD_LIST].size()));
+                    arg_map[BOOL_EXPR_LIST].push_back(std::to_string(arg_map[QUERY_FIELD_LIST].size() - 1));
 
-                    std::cout << "boolExpression appended: restriction index is " << arg_map[QUERY_FIELD_LIST].size() << std::endl;
+                    std::cout << "boolExpression appended: restriction index is " << arg_map[QUERY_FIELD_LIST].size() - 1 << std::endl;
 //                    restriction_count++;
                 }
             };
