@@ -12,7 +12,7 @@ namespace tao {
     namespace pegtl {
         namespace test {
 
-            const std::string PLACE_HOLDER = "0";
+//            const std::string PLACE_HOLDER = "0";
             int restriction_count = 0;
             //////////////////////////////////////////////////////////
             // PEGTL rules
