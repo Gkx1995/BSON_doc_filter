@@ -18,6 +18,8 @@ public:
     Parser();
     ~Parser();
     void perform_pegtl_parser(std::string& query, std::map<std::string, std::vector<std::string>> &arg_map);
+
+//    int restriction_count;
 };
 
 #endif //UNTITLED_QUERY_PARSER_H
