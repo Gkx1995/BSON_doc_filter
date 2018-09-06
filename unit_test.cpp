@@ -936,7 +936,7 @@ TEST_CASE("Test timestamp") {
 TEST_CASE("Test space tolerance") {
     bson_t *input_doc = generate_fixed_input_doc();
 
-    std::string q1 = "select int32     ,    _id,int64 where ((  (int32 int32 *) or     (  double double     =   10.50   )    and oid _id = 5b843debf88cf51106bfdade) and int64 int64 >= 300) and (((bool bool *))  )";
+    std::string q1 = "select int32     ,    _id,int64 where      ((  (int32 int32    *) or     (  double double     =   10.50   )    and oid _id = 5b843debf88cf51106bfdade  ) and int64 int64 >= 300 ) and ((       (bool bool *))  )";
     CHECK(should_insert(input_doc, q1) == true);
 
     delete(input_doc);
