@@ -33,8 +33,8 @@ namespace tao {
             //////////////////////////////////////////////////////////
             // define data type rules
             //////////////////////////////////////////////////////////
-
-            struct _EOD: TAO_PEGTL_STRING("eod"){};
+            std::string eod = "eod";
+            struct _EOD: TAO_PEGTL_STRING(eod.c_str()){};
             struct _DOUBLE: TAO_PEGTL_STRING("double"){};
             struct _UTF8: TAO_PEGTL_STRING("utf8"){};
             struct _DOCUMENT: TAO_PEGTL_STRING("document"){};
