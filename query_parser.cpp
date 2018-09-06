@@ -203,10 +203,10 @@ namespace tao {
             template<> struct action< restriction > {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
-                    arg_map[BOOL_EXPR_LIST].push_back(std::to_string(restriction_count));
+                    arg_map[BOOL_EXPR_LIST].push_back(std::to_string(Parser::restriction_count));
 
-                    std::cout << "boolExpression appended: restriction index is " << restriction_count << std::endl;
-                    restriction_count++;
+                    std::cout << "boolExpression appended: restriction index is " << Parser::restriction_count << std::endl;
+                    Parser::restriction_count++;
                 }
             };
 
@@ -237,6 +237,7 @@ Parser::Parser() {}
 void Parser::perform_pegtl_parser(std::string& query, std::map<std::string, std::vector<std::string>> &arg_map) {
     // generate memory_input
 //    tao::pegtl::test::restriction_count = 0;
+    restriction_count = 0;
     tao::pegtl::memory_input<> in(query, "");
 
     // apply input and generate arg_map
