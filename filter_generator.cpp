@@ -7,6 +7,7 @@
 //////////////////////////////////////////////////////////
 // Filter methods
 //////////////////////////////////////////////////////////
+using namespace CommonConstants;
 
 // Constructor
 Filter::Filter(std::string& query) {
@@ -46,7 +47,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
     if (!should_insert(input_doc))
         return nullptr;
 
-    projector = new Projector(arg_map["selected"], shard_key);
+    projector = new Projector(arg_map[SELECTED_FIELD_LIST], shard_key);
     return projector->get_input_doc_if_satisfied_filter(input_doc);
 
 }
@@ -54,7 +55,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
 bool Filter::should_insert(const bson_t* input_doc) {
 
     long filters_count = filters.size();
-    long restrictions_count = arg_map["field"].size();
+    long restrictions_count = arg_map[QUERY_FIELD_LIST].size();
     bool should_insert;
     auto* restrictions_satisfied_arr = new bool[restrictions_count];
 
@@ -74,9 +75,9 @@ bool Filter::should_insert(const bson_t* input_doc) {
         std::cout << "Input doc: " << bson_as_json(input_doc, NULL) << std::endl;
 
 
-        _field = arg_map["field"].at(i);
-        _operator = arg_map["relationType"].at(i);
-        _datatype = arg_map["dataType"].at(i);
+        _field = arg_map[QUERY_FIELD_LIST].at(i);
+        _operator = arg_map[NUMERIC_OPERATOR_LIST].at(i);
+        _datatype = arg_map[DATA_TYPE_LIST].at(i);
 
         // first handle * and ! operator
         if (_operator == "*" || _operator == "!") {
@@ -127,7 +128,7 @@ bool Filter::should_insert(const bson_t* input_doc) {
 
     should_insert = restrictions_satisfied_arr[0];
 
-    long bool_relations_size = arg_map["boolType"].size();
+    long bool_relations_size = arg_map[BOOL_OPERATOR_LIST].size();
 
     // only one filter
     if (bool_relations_size == 0) {
@@ -157,7 +158,7 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
     std::string curt_symbol;
     std::string pushed_value;
 
-    bool_expr_list = arg_map["boolExpression"];
+    bool_expr_list = arg_map[BOOL_EXPR_LIST];
     satisfy_query = false;
 
     // we already checks the validation of braces in the checker, so we do not check again here
@@ -299,14 +300,14 @@ void Filter::generate_filters() {
     if (arg_map.empty())
         return;
 
-    if (arg_map.find("field") != arg_map.end() &&
-        arg_map.find("term") != arg_map.end() &&
-        arg_map.find("dataType") != arg_map.end()) {
+    if (arg_map.find(QUERY_FIELD_LIST) != arg_map.end() &&
+        arg_map.find(QUERY_VALUE_LIST) != arg_map.end() &&
+        arg_map.find(DATA_TYPE_LIST) != arg_map.end()) {
 
-        std::vector<std::string> field_list = arg_map["field"];
-        std::vector<std::string> term_list = arg_map["term"];
-        std::vector<std::string> data_type_list = arg_map["dataType"];
-        std::vector<std::string> _operator_list = arg_map["relationType"];
+        std::vector<std::string> field_list = arg_map[QUERY_FIELD_LIST];
+        std::vector<std::string> term_list = arg_map[QUERY_VALUE_LIST];
+        std::vector<std::string> data_type_list = arg_map[DATA_TYPE_LIST];
+        std::vector<std::string> _operator_list = arg_map[NUMERIC_OPERATOR_LIST];
 
         if (field_list.size() == term_list.size()
         && data_type_list.size() == term_list.size()) {
