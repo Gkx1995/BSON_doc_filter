@@ -4,6 +4,7 @@
 
 #include "query_parser.h"
 
+using namespace CommonConstants;
 //////////////////////////////////////////////////////////
 // PEGTL rules and actions
 //////////////////////////////////////////////////////////
@@ -166,7 +167,7 @@ namespace tao {
                 template <typename Input>
                 static void apply(const Input& in, std::map<std::string, std::vector<std::string>>& arg_map) {
                     arg_map["relationType"].push_back(in.string());
-                    arg_map["term"].push_back(CommonConstants::PLACE_HOLDER);
+                    arg_map["term"].push_back(PLACE_HOLDER);
 
                     std::cout << "relationType matched: " << in.string() << std::endl;
                 }
