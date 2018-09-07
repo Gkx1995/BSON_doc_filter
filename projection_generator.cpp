@@ -12,7 +12,6 @@ Projector::Projector(std::vector<std::string> &selected_fields_list, const std::
     std::istringstream iss(shard_key_list);
     std::string shard_key;
     std::string _id;
-    this->selected_fields_list = selected_fields_list;
 
      _id = "_id";
     if (std::find(selected_fields_list.begin(), selected_fields_list.end(), _id) == selected_fields_list.end()) {
@@ -27,6 +26,8 @@ Projector::Projector(std::vector<std::string> &selected_fields_list, const std::
             std::cout << "Query not included shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
         }
     }
+
+    this->selected_fields_list = selected_fields_list;
 }
 
 
