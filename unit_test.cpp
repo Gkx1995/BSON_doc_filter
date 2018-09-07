@@ -913,7 +913,7 @@ TEST_CASE("Test space tolerance") {
 TEST_CASE("Test shard key", "[get_input_doc_if_satisfied_filter]") {
     bson_t *input_doc = generate_fixed_input_doc();
 
-    std::string q1 = "select document.a.b.c,    foo.bar.0.baz_0, int32";
+    std::string q1 = "select document.a.b.c,    foo.bar.0.baz_0";
     std::string shard_key = "int32 int64";
     const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1, shard_key);
     bson_t* valid_doc_1 = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "]", "}");
