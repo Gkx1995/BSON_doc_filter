@@ -167,7 +167,7 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
         if (curt_symbol != ")") {
 
             bool_expr_stack.push(curt_symbol);
-            std::cout << "stack pushed: " << curt_symbol << std::endl;
+//            std::cout << "stack pushed: " << curt_symbol << std::endl;
 
         }
             // we never push ")" into stack, only take it to backtrack latest "(" in stack
@@ -178,14 +178,14 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
             if (bool_expr_stack.top().find_first_not_of("0123456789") == std::string::npos) {
                 braced_value = restrictions_satisfied_arr[stoi(bool_expr_stack.top())];
 
-                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+//                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
                 bool_expr_stack.pop();
 
                 // else bool_expr_stack.top() should have been modified as "true" or "false"
             } else {
                 braced_value = bool_expr_stack.top() == "true";
 
-                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+//                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
                 bool_expr_stack.pop();
             }
 
@@ -193,11 +193,11 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
 
                 // there must exist one or more [restriction, bool_operator] combinations
                 bool_operator = bool_expr_stack.top();
-                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+//                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
                 bool_expr_stack.pop();
 
                 restriction = bool_expr_stack.top();
-                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+//                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
                 bool_expr_stack.pop();
 
                 if (restriction.find_first_not_of("0123456789") == std::string::npos) {
@@ -215,13 +215,13 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
 
             if (!bool_expr_stack.empty() && bool_expr_stack.top() == "(") {
 
-                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+//                std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
                 bool_expr_stack.pop();
                 // the current deepest braced expression in stack is replaced with pushed value
                 pushed_value = braced_value ? "true" : "false";
 
                 bool_expr_stack.push(pushed_value);
-                std::cout << "stack pushed: " << bool_expr_stack.top() << std::endl;
+//                std::cout << "stack pushed: " << bool_expr_stack.top() << std::endl;
             }
 
         }
