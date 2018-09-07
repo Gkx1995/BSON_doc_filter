@@ -5,20 +5,26 @@
 #include "projection_generator.h"
 
 // Constructor
-Projector::Projector(std::vector<std::string> &selected_fields_list, const std::string& shard_key) {
+
+Projector::Projector(std::vector<std::string> &selected_fields_list, const std::string& shard_key_list) {
+
+    // check if we have already selected shard key or not
+    std::istringstream iss(shard_key_list);
+    std::string shard_key;
+    std::string _id;
     this->selected_fields_list = selected_fields_list;
 
-    std::string _id = "_id";
+     _id = "_id";
     if (std::find(selected_fields_list.begin(), selected_fields_list.end(), _id) == selected_fields_list.end()) {
         selected_fields_list.push_back(_id);
         std::cout << "Query does not include _id. Adding _id to select_fields_list" << std::endl;
-    }
-    // check if we have already selected shard key or not
-    std::cout << "Shard key is: " << shard_key << std::endl;
-    if (!shard_key.empty()
-        && std::find(selected_fields_list.begin(), selected_fields_list.end(), shard_key) == selected_fields_list.end()) {
-        selected_fields_list.push_back(shard_key);
-        std::cout << "Query does not include shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
+
+    while (std::getline(iss, shard_key, ' ')) {
+        if (!shard_key.empty()
+            && std::find(selected_fields_list.begin(), selected_fields_list.end(), shard_key) == selected_fields_list.end()) {
+            selected_fields_list.push_back(shard_key);
+            std::cout << "Query not included shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
+        }
     }
 }
 

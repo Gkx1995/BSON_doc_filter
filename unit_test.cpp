@@ -802,39 +802,7 @@ TEST_CASE("Test braced query") {
     delete(input_doc);
 }
 
-TEST_CASE("Test shard key", "[get_input_doc_if_satisfied_filter]") {
-    bson_t *input_doc = generate_fixed_input_doc();
 
-    std::string q1 = "select document.a.b.c,    foo.bar.0.baz_0, int32";
-    std::string shard_key = "int32";
-    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1, shard_key);
-    bson_t* valid_doc_1 = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "]", "}");
-    bson_t* a = bson_new();
-    bson_t* b = bson_new();
-    bson_t* c = bson_new();
-    bson_oid_t oid = get_fixed_oid();
-    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
-    BSON_APPEND_INT32(c, "c", 1);
-    BSON_APPEND_DOCUMENT(b, "b", c);
-    BSON_APPEND_DOCUMENT(a, "a", b);
-    BSON_APPEND_DOCUMENT(valid_doc_1, "document", a);
-
-    BSON_APPEND_INT32(valid_doc_1, "int32", 200);
-
-    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
-
-    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
-    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
-
-    if (input_doc == output_doc_1)
-        delete (input_doc);
-    else {
-        delete (output_doc_1);
-        delete (input_doc);
-    }
-    if (valid_doc_1)
-        delete (valid_doc_1);
-}
 
 TEST_CASE("Test projections: select inside array_1", "[get_input_doc_if_satisfied_filter]") {
     bson_t *input_doc = generate_fixed_input_doc();
@@ -940,4 +908,39 @@ TEST_CASE("Test space tolerance") {
     CHECK(should_insert(input_doc, q1) == true);
 
     delete(input_doc);
+}
+
+TEST_CASE("Test shard key", "[get_input_doc_if_satisfied_filter]") {
+    bson_t *input_doc = generate_fixed_input_doc();
+
+    std::string q1 = "select document.a.b.c,    foo.bar.0.baz_0, int32";
+    std::string shard_key = "int32 int64";
+    const bson_t* output_doc_1 = get_input_doc_if_satisfied_filter(input_doc, q1, shard_key);
+    bson_t* valid_doc_1 = BCON_NEW("foo", "{", "bar", "[", "{", "baz_0", BCON_INT32 (0), "}", "]", "}");
+    bson_t* a = bson_new();
+    bson_t* b = bson_new();
+    bson_t* c = bson_new();
+    bson_oid_t oid = get_fixed_oid();
+    BSON_APPEND_OID(valid_doc_1, "_id", &oid);
+    BSON_APPEND_INT32(c, "c", 1);
+    BSON_APPEND_DOCUMENT(b, "b", c);
+    BSON_APPEND_DOCUMENT(a, "a", b);
+    BSON_APPEND_DOCUMENT(valid_doc_1, "document", a);
+
+    BSON_APPEND_INT32(valid_doc_1, "int32", 200);
+    BSON_APPEND_INT64(valid_doc_1, "int64", 300);
+
+    CHECK(is_identical(output_doc_1, valid_doc_1) == true);
+
+    std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
+    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+
+    if (input_doc == output_doc_1)
+        delete (input_doc);
+    else {
+        delete (output_doc_1);
+        delete (input_doc);
+    }
+    if (valid_doc_1)
+        delete (valid_doc_1);
 }
