@@ -8,12 +8,17 @@
 Projector::Projector(std::vector<std::string> &selected_fields_list, const std::string& shard_key) {
     this->selected_fields_list = selected_fields_list;
 
+    std::string _id = "_id";
+    if (std::find(selected_fields_list.begin(), selected_fields_list.end(), _id) == selected_fields_list.end()) {
+        selected_fields_list.push_back(_id);
+        std::cout << "Query does not include _id. Adding _id to select_fields_list" << std::endl;
+    }
     // check if we have already selected shard key or not
     std::cout << "Shard key is: " << shard_key << std::endl;
     if (!shard_key.empty()
         && std::find(selected_fields_list.begin(), selected_fields_list.end(), shard_key) == selected_fields_list.end()) {
         selected_fields_list.push_back(shard_key);
-        std::cout << "Query not included shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
+        std::cout << "Query does not include shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
     }
 }
 
@@ -32,93 +37,89 @@ bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
         return bson_copy(input_doc);
 
     returned_doc = bson_new();
-    // find and append OId
-    if (find_and_append_unique_id(returned_doc, input_doc)) {
+    for (long i = 0; i < selected_num; ++i) {
+        std::istringstream iss(selected_fields_list.at(i));
+        std::vector<std::string> tokens;
+        std::string token, last_token;
+        bson_iter_t iter, last_token_iter;
+        bson_t* element_doc, *tmp_doc;
+        bool valid_field;
+        long token_idx;
 
-        for (long i = 0; i < selected_num; ++i) {
-            std::istringstream iss(selected_fields_list.at(i));
-            std::vector<std::string> tokens;
-            std::string token, last_token;
-            bson_iter_t iter, last_token_iter;
-            bson_t* element_doc, *tmp_doc;
-            bool valid_field;
-            long token_idx;
-
-            valid_field = true;
-            while (std::getline(iss, token, '.')) {
-                if (!token.empty())
-                    tokens.push_back(token);
-            }
-
-            bson_iter_init(&iter, input_doc);
-            last_token = tokens.at(tokens.size() - 1);
-
-            // input_doc does not contain this field, ignore this selected field
-            if (!bson_iter_find_descendant(&iter, selected_fields_list.at(i).c_str(), &last_token_iter)) {
-                std::cout << "field did not find: " << selected_fields_list.at(i) << ". Will ignore this selected field for projection." << std::endl;
-                valid_field = false;
-            }
-
-            // ignore this selected field and loop next one, decrease valid num
-            if (!valid_field) {
-                valid_selected_num--;
-                continue;
-            }
-
-            if (tokens.size() == 1) {
-                generate_basic_element_doc(returned_doc, &last_token_iter);
-            } else {
-                token_idx = tokens.size() - 1;
-                element_doc = bson_new();
-                generate_basic_element_doc(element_doc, &last_token_iter);
-                token_idx--;
-
-                for (; token_idx >= 0; token_idx--) {
-
-                    // this token contains only digit and is supposed to be appended as array
-                    if (tokens.at(token_idx + 1).find_first_not_of("0123456789") == std::string::npos) {
-                        element_doc = append_array(element_doc, tokens.at(token_idx));
-                    } else
-                        element_doc = append_document(element_doc, tokens.at(token_idx));
-                }
-
-                bson_concat(returned_doc, element_doc);
-                std::cout << "returned doc appended: " << bson_as_json(returned_doc, NULL) << std::endl;
-//                bson_destroy(tmp_doc);
-                bson_destroy(element_doc);
-            }
+        valid_field = true;
+        while (std::getline(iss, token, '.')) {
+            if (!token.empty())
+                tokens.push_back(token);
         }
 
-        if (valid_selected_num > 0)
-            return returned_doc;
+        bson_iter_init(&iter, input_doc);
+        last_token = tokens.at(tokens.size() - 1);
+
+        // input_doc does not contain this field, ignore this selected field
+        if (!bson_iter_find_descendant(&iter, selected_fields_list.at(i).c_str(), &last_token_iter)) {
+            std::cout << "field did not find: " << selected_fields_list.at(i) << ". Will ignore this selected field for projection." << std::endl;
+            valid_field = false;
+        }
+
+        // ignore this selected field and loop next one, decrease valid num
+        if (!valid_field) {
+            valid_selected_num--;
+            continue;
+        }
+
+        if (tokens.size() == 1) {
+            generate_basic_element_doc(returned_doc, &last_token_iter);
+        } else {
+            token_idx = tokens.size() - 1;
+            element_doc = bson_new();
+            generate_basic_element_doc(element_doc, &last_token_iter);
+            token_idx--;
+
+            for (; token_idx >= 0; token_idx--) {
+
+                // this token contains only digit and is supposed to be appended as array
+                if (tokens.at(token_idx + 1).find_first_not_of("0123456789") == std::string::npos) {
+                    element_doc = append_array(element_doc, tokens.at(token_idx));
+                } else
+                    element_doc = append_document(element_doc, tokens.at(token_idx));
+            }
+
+            bson_concat(returned_doc, element_doc);
+            std::cout << "returned doc appended: " << bson_as_json(returned_doc, NULL) << std::endl;
+//                bson_destroy(tmp_doc);
+            bson_destroy(element_doc);
+        }
     }
+
+    if (valid_selected_num > 0)
+        return returned_doc;
     return nullptr;
 }
 
-bool Projector::find_and_append_unique_id(bson_t* returned_doc, const bson_t* input_doc) {
-    bson_iter_t iter;
-    const char* key;
-    bson_type_t type;
-    const bson_value_t* value;
-
-    if (bson_iter_init(&iter, input_doc)) {
-
-        while (bson_iter_next(&iter)) {
-            type = bson_iter_type(&iter);
-            key = bson_iter_key(&iter);
-            if (strcmp(key, "_id") == 0) {
-
-                value = bson_iter_value(&iter);
-                std::cout << "_id found for this input doc" << std::endl;
-//                BSON_APPEND_OID(returned_doc, key, &value->value.v_oid);
-                generate_basic_element_doc(returned_doc, &iter);
-                return true;
-            }
-        }
-    }
-    std::cerr << "_id not found for this input doc" << std::endl;
-    return false;
-}
+//bool Projector::find_and_append_unique_id(bson_t* returned_doc, const bson_t* input_doc) {
+//    bson_iter_t iter;
+//    const char* key;
+//    bson_type_t type;
+//    const bson_value_t* value;
+//
+//    if (bson_iter_init(&iter, input_doc)) {
+//
+//        while (bson_iter_next(&iter)) {
+//            type = bson_iter_type(&iter);
+//            key = bson_iter_key(&iter);
+//            if (strcmp(key, "_id") == 0) {
+//
+//                value = bson_iter_value(&iter);
+//                std::cout << "_id found for this input doc" << std::endl;
+////                BSON_APPEND_OID(returned_doc, key, &value->value.v_oid);
+//                generate_basic_element_doc(returned_doc, &iter);
+//                return true;
+//            }
+//        }
+//    }
+//    std::cerr << "_id not found for this input doc" << std::endl;
+//    return false;
+//}
 
 void Projector::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_iter) {
     const char* key;
