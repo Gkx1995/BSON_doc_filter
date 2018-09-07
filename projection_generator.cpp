@@ -18,6 +18,7 @@ Projector::Projector(std::vector<std::string> &selected_fields_list, const std::
     if (std::find(selected_fields_list.begin(), selected_fields_list.end(), _id) == selected_fields_list.end()) {
         selected_fields_list.push_back(_id);
         std::cout << "Query does not include _id. Adding _id to select_fields_list" << std::endl;
+    }
 
     while (std::getline(iss, shard_key, ' ')) {
         if (!shard_key.empty()
