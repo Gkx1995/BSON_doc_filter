@@ -29,7 +29,7 @@ private:
     bson_t* append_array(bson_t* bson_doc, std::string& field);
     void generate_basic_element_doc(bson_t* returned_doc, bson_iter_t* iter);
     bool find_and_append_unique_id(bson_t* returned_doc, const bson_t* input_doc);
-    int addtional_appended_count;
+    int additional_appended_count;
 
 protected:
     std::vector<std::string> selected_fields_list;

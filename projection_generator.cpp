@@ -12,13 +12,13 @@ Projector::Projector(std::vector<std::string> &selected_fields_list, const std::
     std::istringstream iss(shard_key_list);
     std::string shard_key;
     std::string _id;
-    addtional_appended_count = 0;
+    additional_appended_count = 0;
 
      _id = "_id";
     if (std::find(selected_fields_list.begin(), selected_fields_list.end(), _id) == selected_fields_list.end()) {
         selected_fields_list.push_back(_id);
         std::cout << "Query does not include _id. Adding _id to select_fields_list" << std::endl;
-        addtional_appended_count++;
+        additional_appended_count++;
     }
 
     while (std::getline(iss, shard_key, ' ')) {
@@ -26,7 +26,7 @@ Projector::Projector(std::vector<std::string> &selected_fields_list, const std::
             && std::find(selected_fields_list.begin(), selected_fields_list.end(), shard_key) == selected_fields_list.end()) {
             selected_fields_list.push_back(shard_key);
             std::cout << "Query not included shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
-            addtional_appended_count++;
+            additional_appended_count++;
         }
     }
 
@@ -41,7 +41,7 @@ bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
 
 //    selected_list = arg_map["selected"];
     selected_num = selected_fields_list.size();
-    valid_selected_num = selected_num - addtional_appended_count;
+    valid_selected_num = selected_num - additional_appended_count;
     std::cout << "selected_num = " << selected_num << std::endl;
 
     if (selected_num == 0 || selected_fields_list.at(0) == "*")
