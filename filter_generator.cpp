@@ -348,7 +348,7 @@ void Filter::generate_filters() {
             throw "Error: Query parsed wrong! Fields amount is not equal to term amount!";
         }
     } else {
-        std::cout << "Only have \"*\" or \"!\" restrictions, no filter generated." << std::endl;
+        std::cout << "No restrictions." << std::endl;
     }
 }
 

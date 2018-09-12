@@ -816,7 +816,7 @@ TEST_CASE("Test projections: select inside array_1", "[get_input_doc_if_satisfie
 
     CHECK(is_identical(output_doc_1, valid_doc_1) == true);
     std::cout << "projection of input_doc: " << bson_as_json(output_doc_1, NULL) << std::endl;
-    std::cout << "projection of valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
+    std::cout << "valid doc: " << bson_as_json(valid_doc_1, NULL) << std::endl;
 
     if (input_doc == output_doc_1)
         delete (input_doc);

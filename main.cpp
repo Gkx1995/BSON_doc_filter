@@ -45,7 +45,7 @@ int main() {
 //    generate_fixed_input_doc();
 
 //    query sth matched with input doc
-    std::string query = "select document.a.b.c,document.a.b.d,foo.bar.0.baz_0,int32,foo.bar.1.baz_1 where ((int32 int32 *) or (double double = 10.50)) and int64 int64 >= 300";
+    std::string query = "SELECT foo.bar.1";
 
     // select all, should return 1
 //    std::string query = "where *";
@@ -55,7 +55,7 @@ int main() {
 //    std::string query = "WHERE bool string = 1";
 //    std::string query = "WHERE string string = str";
 
-            auto* filter = new Filter(query);
+            auto* filter = new Filter(query, "");
 
     bson_t* input_doc = filter->generate_input_doc();
 
