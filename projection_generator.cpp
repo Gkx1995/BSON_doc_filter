@@ -143,6 +143,9 @@ void Projector::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_it
             break;
 
         case BSON_TYPE_ARRAY: {
+            // always append as first element
+            key = "0";
+
             uint32_t array_len = 0;
             const uint8_t* array = NULL;
             bson_iter_array(last_token_iter, &array_len, &array);
