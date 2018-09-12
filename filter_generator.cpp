@@ -10,9 +10,9 @@
 using namespace CommonConstants;
 
 // Constructor
-Filter::Filter(std::string& query) {
+Filter::Filter(std::string& query, const std::string& shard_keys) {
 
-    perform_pegtl_parser(query);
+    perform_pegtl_parser(query, shard_keys);
 }
 
 // Destructor
@@ -27,7 +27,7 @@ Filter::~Filter() {
     delete(&arg_map);
 }
 
-void Filter::perform_pegtl_parser(std::string& query) {
+void Filter::perform_pegtl_parser(std::string& query, const std::string& shard_keys) {
 
     auto* parser = new Parser();
     parser->perform_pegtl_parser(query, arg_map);
@@ -39,15 +39,36 @@ void Filter::perform_pegtl_parser(std::string& query) {
     } catch (const char *msg) {
         std::cerr << msg << std::endl;
     }
+    append_shard_keys_and_id(shard_keys);
 }
 
-const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc, const std::string& shard_key) {
+void Filter::append_shard_keys_and_id(const std::string &shard_keys) {
+    std::istringstream iss(shard_keys);
+    std::string shard_key;
+    std::string _id;
+
+    while (std::getline(iss, shard_key, ' ')) {
+        if (!shard_key.empty()
+            && std::find(arg_map[SELECTED_FIELD_LIST].begin(), arg_map[SELECTED_FIELD_LIST].end(), shard_key) == arg_map[SELECTED_FIELD_LIST].end()) {
+            arg_map[SELECTED_FIELD_LIST].push_back(shard_key);
+            std::cout << "Query not included shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
+        }
+    }
+
+    _id = "_id";
+    if (std::find(arg_map[SELECTED_FIELD_LIST].begin(), arg_map[SELECTED_FIELD_LIST].end(), _id) == arg_map[SELECTED_FIELD_LIST].end()) {
+        arg_map[SELECTED_FIELD_LIST].push_back(_id);
+        std::cout << "Query not included _id. Adding shard key to select_fields_list: " << _id << std::endl;
+    }
+}
+
+const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
     Projector* projector = NULL;
 
     if (!should_insert(input_doc))
         return nullptr;
 
-    projector = new Projector(arg_map[SELECTED_FIELD_LIST], shard_key);
+    projector = new Projector(arg_map[SELECTED_FIELD_LIST]);
     return projector->get_input_doc_if_satisfied_filter(input_doc);
 
 }
@@ -85,13 +106,13 @@ bool Filter::should_insert(const bson_t* input_doc) {
 
             // check existence of field
             exists = bson_iter_init(&doc_iter, input_doc)
-                    && bson_iter_find_descendant(&doc_iter, _field.c_str(), &target_iter)
-                    && bson_iter_type(&target_iter) == data_type_map[_datatype];
+                     && bson_iter_find_descendant(&doc_iter, _field.c_str(), &target_iter)
+                     && bson_iter_type(&target_iter) == data_type_map[_datatype];
 
             flag = exists ? 0 : IGNORE_NUM;
         }
 
-        // handle normal operators
+            // handle normal operators
         else if (filter_idx < filters_count) {
             // check if the filter is a dot-notation key or not
             if (_field.find('.') != std::string::npos) {
@@ -234,18 +255,18 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
         } else {
             braced_value = bool_expr_stack.top() == "true";
         }
-        std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+//        std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
         bool_expr_stack.pop();
 
         while (!bool_expr_stack.empty()) {
 
             // there must exist one or more [restriction, bool_operator] combinations
             bool_operator = bool_expr_stack.top();
-            std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+//            std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
             bool_expr_stack.pop();
 
             restriction = bool_expr_stack.top();
-            std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
+//            std::cout << "stack poped: " << bool_expr_stack.top() << std::endl;
             bool_expr_stack.pop();
 
             if (restriction.find_first_not_of("0123456789") == std::string::npos) {
@@ -264,7 +285,7 @@ bool Filter::satisfy_query(bool restrictions_satisfied_arr[]) {
 
     satisfy_query = braced_value;
 
-    std::cout << "input doc satisfy query: " << satisfy_query << std::endl;
+    std::cout << "input doc satisfy all the restrictions: " << satisfy_query << std::endl;
     return satisfy_query;
 }
 
@@ -310,9 +331,11 @@ void Filter::generate_filters() {
         std::vector<std::string> _operator_list = arg_map[NUMERIC_OPERATOR_LIST];
 
         if (field_list.size() == term_list.size()
-        && data_type_list.size() == term_list.size()) {
+            && data_type_list.size() == term_list.size()) {
             long size = field_list.size();
             for (long i = 0; i < size; i++) {
+
+                // we do not generate filter for "*" and "!", we directly handle them in should_insert()
                 if (_operator_list.at(i) != "*" && _operator_list.at(i) != "!") {
                     try {
                         filters.push_back(generate_filter(field_list.at(i), term_list.at(i), data_type_list.at(i)));
@@ -322,12 +345,10 @@ void Filter::generate_filters() {
                 }
             }
         } else {
-            //TODO: throw exceptions
             throw "Error: Query parsed wrong! Fields amount is not equal to term amount!";
         }
     } else {
-        //TODO: throw not found exceptions
-        std::cout << "We do not have restrictions for this retrieve command!" << std::endl;
+        std::cout << "Only have \"*\" or \"!\" restrictions, no filter generated." << std::endl;
     }
 }
 
@@ -548,12 +569,12 @@ bson_t* Filter::generate_input_doc() {
     BSON_APPEND_NULL(input_doc, "null");
     BSON_APPEND_INT32(input_doc, "in t 32", 1000);
     BSON_APPEND_BOOL(input_doc, "b o o l", false);
+    BSON_APPEND_UNDEFINED(input_doc, "undefined");
 
     BSON_APPEND_UTF8(input_doc, "utf 8", "utf 8");
 
     // generate nested element {document:{a: {b: {c: 1}}}}
     BSON_APPEND_INT32(c, "c", 1);
-    BSON_APPEND_INT32(c, "d", 1);
     BSON_APPEND_DOCUMENT(b, "b", c);
     BSON_APPEND_DOCUMENT(a, "a", b);
     BSON_APPEND_DOCUMENT(input_doc, "document", a);

@@ -6,33 +6,16 @@
 
 // Constructor
 
-Projector::Projector(std::vector<std::string> &selected_fields_list, const std::string& shard_key_list) {
+// Constructor
+Projector::Projector(std::vector<std::string> &selected_fields_list) {
 
-    // check if we have already selected shard key or not
-    std::istringstream iss(shard_key_list);
-    std::string shard_key;
-    std::string _id;
-    additional_appended_count = 0;
-
-     _id = "_id";
-    if (std::find(selected_fields_list.begin(), selected_fields_list.end(), _id) == selected_fields_list.end()) {
-        selected_fields_list.push_back(_id);
-        std::cout << "Query does not include _id. Adding _id to select_fields_list" << std::endl;
-        additional_appended_count++;
-    }
-
-    while (std::getline(iss, shard_key, ' ')) {
-        if (!shard_key.empty()
-            && std::find(selected_fields_list.begin(), selected_fields_list.end(), shard_key) == selected_fields_list.end()) {
-            selected_fields_list.push_back(shard_key);
-            std::cout << "Query not included shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
-            additional_appended_count++;
-        }
-    }
 
     this->selected_fields_list = selected_fields_list;
+
 }
 
+// Destructor
+Projector::~Projector() {}
 
 bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
     bson_t* returned_doc;
@@ -40,14 +23,18 @@ bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
     long valid_selected_num;
 
 //    selected_list = arg_map["selected"];
+
+
+    valid_selected_num = selected_fields_list.size();
+
     selected_num = selected_fields_list.size();
-    valid_selected_num = selected_num - additional_appended_count;
     std::cout << "selected_num = " << selected_num << std::endl;
 
     if (selected_num == 0 || selected_fields_list.at(0) == "*")
         return bson_copy(input_doc);
 
     returned_doc = bson_new();
+
     for (long i = 0; i < selected_num; ++i) {
         std::istringstream iss(selected_fields_list.at(i));
         std::vector<std::string> tokens;
@@ -104,10 +91,11 @@ bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
 
     if (valid_selected_num > 0)
         return returned_doc;
+
     return nullptr;
 }
 
-//bool Projector::find_and_append_unique_id(bson_t* returned_doc, const bson_t* input_doc) {
+bool Projector::find_and_append_unique_id(bson_t* returned_doc, const bson_t* input_doc) {
 //    bson_iter_t iter;
 //    const char* key;
 //    bson_type_t type;
@@ -130,7 +118,8 @@ bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
 //    }
 //    std::cerr << "_id not found for this input doc" << std::endl;
 //    return false;
-//}
+    return true;
+}
 
 void Projector::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_iter) {
     const char* key;
@@ -140,11 +129,6 @@ void Projector::generate_basic_element_doc(bson_t* b, bson_iter_t* last_token_it
     key = bson_iter_key(last_token_iter);
     type = bson_iter_type(last_token_iter);
     value = bson_iter_value(last_token_iter);
-
-    // for array type, we only support select one child element for now, so the key would always be "0"
-    if (std::string(key).find_first_not_of("0123456789") == std::string::npos)
-        key = "0";
-
 
     switch (type) {
         case BSON_TYPE_EOD:

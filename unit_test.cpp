@@ -54,14 +54,14 @@ bson_t* generate_fixed_input_doc() {
 }
 
 bool should_insert(bson_t* input_doc, std::string &query) {
-    auto* filter = new Filter(query);
+    auto* filter = new Filter(query, "");
     bool should_input = filter->should_insert(input_doc);
     return should_input;
 }
 
 const bson_t* get_input_doc_if_satisfied_filter(bson_t* input_doc, std::string &query, std::string shard_key = "") {
-    auto* filter = new Filter(query);
-    return filter->get_input_doc_if_satisfied_filter(input_doc, shard_key);
+    auto* filter = new Filter(query, shard_key);
+    return filter->get_input_doc_if_satisfied_filter(input_doc);
 }
 
 bool is_identical(const bson_t* l, bson_t* r) {
@@ -101,7 +101,7 @@ TEST_CASE("Multiple input doc for one filter instance", "[should_insert]") {
     bson_t *input_doc4 = generate_fixed_input_doc();
     bson_t *input_doc5 = generate_fixed_input_doc();
     std::string q1 = "select * where int32 int32 = 200";
-    auto* filter = new Filter(q1);
+    auto* filter = new Filter(q1, "");
 
     CHECK(filter->should_insert(input_doc1));
 
