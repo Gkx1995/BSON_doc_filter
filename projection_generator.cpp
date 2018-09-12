@@ -251,7 +251,7 @@ bson_t* Projector::append_array(bson_t* bson_doc, std::string& field) {
 
     bson_t* return_doc;
     return_doc = bson_new();
-    BSON_APPEND_DOCUMENT(return_doc, field.c_str(), bson_doc);
+    BSON_APPEND_ARRAY(return_doc, field.c_str(), bson_doc);
     bson_destroy(bson_doc);
     std::cout << "nested array appended: " << bson_as_json(return_doc, NULL) << std::endl;
     return return_doc;
