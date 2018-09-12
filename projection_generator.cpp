@@ -246,8 +246,8 @@ bson_t* Projector::append_document(bson_t* bson_doc, std::string& field) {
 bson_t* Projector::append_array(bson_t* bson_doc, std::string& field) {
 
     // current field is an array element
-//    if (field.find_first_not_of("0123456789") == std::string::npos)
-//        field = "0";
+    if (field.find_first_not_of("0123456789") == std::string::npos)
+        field = "0";
 
     bson_t* return_doc;
     return_doc = bson_new();
