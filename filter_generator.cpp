@@ -47,10 +47,12 @@ void Filter::append_shard_keys_and_id(const std::string &shard_keys) {
     std::string shard_key;
     std::string _id;
 
+    extra_select_count = 0;
     while (std::getline(iss, shard_key, ' ')) {
         if (!shard_key.empty()
             && std::find(arg_map[SELECTED_FIELD_LIST].begin(), arg_map[SELECTED_FIELD_LIST].end(), shard_key) == arg_map[SELECTED_FIELD_LIST].end()) {
             arg_map[SELECTED_FIELD_LIST].push_back(shard_key);
+            extra_select_count++;
             std::cout << "Query not included shard key. Adding shard key to select_fields_list: " << shard_key << std::endl;
         }
     }
@@ -58,6 +60,7 @@ void Filter::append_shard_keys_and_id(const std::string &shard_keys) {
     _id = "_id";
     if (std::find(arg_map[SELECTED_FIELD_LIST].begin(), arg_map[SELECTED_FIELD_LIST].end(), _id) == arg_map[SELECTED_FIELD_LIST].end()) {
         arg_map[SELECTED_FIELD_LIST].push_back(_id);
+        extra_select_count++;
         std::cout << "Query not included _id. Adding shard key to select_fields_list: " << _id << std::endl;
     }
 }
@@ -68,7 +71,7 @@ const bson_t* Filter::get_input_doc_if_satisfied_filter (const bson_t* input_doc
     if (!should_insert(input_doc))
         return nullptr;
 
-    projector = new Projector(arg_map[SELECTED_FIELD_LIST]);
+    projector = new Projector(arg_map[SELECTED_FIELD_LIST], extra_select_count);
     return projector->get_input_doc_if_satisfied_filter(input_doc);
 
 }

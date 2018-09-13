@@ -16,7 +16,7 @@
 class Projector {
 public:
     // Constructor
-    explicit Projector(std::vector<std::string> &selected_fields_list);
+    explicit Projector(std::vector<std::string> &selected_fields_list, int extra_select_count);
     // Destructor
     ~Projector();
 

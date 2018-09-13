@@ -7,10 +7,11 @@
 // Constructor
 
 // Constructor
-Projector::Projector(std::vector<std::string> &selected_fields_list) {
+Projector::Projector(std::vector<std::string> &selected_fields_list, int extra_select_count) {
 
 
     this->selected_fields_list = selected_fields_list;
+    this->additional_appended_count  = extra_select_count;
 
 }
 
@@ -25,7 +26,7 @@ bson_t* Projector::get_input_doc_if_satisfied_filter (const bson_t* input_doc) {
 //    selected_list = arg_map["selected"];
 
 
-    valid_selected_num = selected_fields_list.size();
+    valid_selected_num = selected_fields_list.size() - additional_appended_count;
 
     selected_num = selected_fields_list.size();
     std::cout << "selected_num = " << selected_num << std::endl;

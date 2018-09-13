@@ -46,6 +46,7 @@ private:
     bson_t* generate_unnested_filter(std::string& field, std::string& term, std::string& dataType);
     bool satisfy_query(bool restrictions_satisfied_arr[]);
     void append_shard_keys_and_id(const std::string& shard_keys);
+    int extra_select_count;
 
 protected:
     std::map<std::string, std::vector<std::string>> arg_map;
